@@ -12,3 +12,4 @@ nuget Microsoft.Extensions.Logging
 nuget System.Text.Json
 nuget Microsoft.Extensions.Http
 nuget Destructurama.FSharp
+nuget Fue
