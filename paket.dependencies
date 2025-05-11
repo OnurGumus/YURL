@@ -1,0 +1,14 @@
+source https://api.nuget.org/v3/index.json
+
+storage: none
+
+nuget FSharp.Core
+nuget Giraffe
+nuget Hocon.Extensions.Configuration
+nuget Microsoft.Extensions.Logging.Console
+nuget Microsoft.Extensions.Hosting
+nuget Microsoft.Extensions.DependencyInjection
+nuget Microsoft.Extensions.Logging
+nuget System.Text.Json
+nuget Microsoft.Extensions.Http
+nuget Destructurama.FSharp

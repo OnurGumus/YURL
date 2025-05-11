@@ -1,0 +1,10 @@
+Giraffe
+FSharp.Core
+Hocon.Extensions.Configuration
+Microsoft.Extensions.Logging.Console
+Microsoft.Extensions.Hosting
+Microsoft.Extensions.DependencyInjection
+Microsoft.Extensions.Logging
+System.Text.Json
+Microsoft.Extensions.Http
+Destructurama.FSharp
