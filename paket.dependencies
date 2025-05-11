@@ -13,3 +13,9 @@ nuget System.Text.Json
 nuget Microsoft.Extensions.Http
 nuget Destructurama.FSharp
 nuget Fue
+nuget Expecto
+nuget YoloDev.Expecto.TestSdk 0.15.3
+nuget Microsoft.NET.Test.Sdk
+nuget Expecto.FsCheck
+nuget AltCover
+nuget TickSpec

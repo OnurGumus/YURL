@@ -28,7 +28,7 @@ builder.WebHost.ConfigureLogging(fun ctx logging ->
         logging.ClearProviders().AddConsole().AddDebug() |> ignore
     else
         logging.ClearProviders().AddConsole() |> ignore
-).ConfigureAppConfiguration(fun ctx config -> 
+).ConfigureAppConfiguration(fun ctx _ -> 
         ctx.HostingEnvironment.ApplicationName <- "tyni.ai" 
 ) |> ignore
 
