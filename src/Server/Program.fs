@@ -1,4 +1,5 @@
-﻿open Microsoft.AspNetCore.Builder
+﻿module Program
+open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Giraffe
 open Microsoft.Extensions.Hosting
@@ -7,6 +8,9 @@ open Microsoft.AspNetCore.Http
 open Fue.Data
 open Fue.Compiler
 open System.IO
+open Microsoft.Extensions.Configuration
+open Microsoft.Extensions.DependencyInjection
+
 let builder= WebApplication.CreateBuilder()
 
 let rootHandler: HttpHandler =
@@ -21,18 +25,34 @@ let rootHandler: HttpHandler =
             return! htmlString compiledHtml next ctx
         }
 
-builder.Services.AddGiraffe() |> ignore
+let configureServices (services: IServiceCollection ) =
+        services.AddGiraffe() |> ignore
 
-builder.WebHost.ConfigureLogging(fun ctx logging ->
+let configureLogging (ctx: WebHostBuilderContext) (logging: ILoggingBuilder) =
     if ctx.HostingEnvironment.IsDevelopment() then
         logging.ClearProviders().AddConsole().AddDebug() |> ignore
     else
         logging.ClearProviders().AddConsole() |> ignore
-).ConfigureAppConfiguration(fun ctx _ -> 
-        ctx.HostingEnvironment.ApplicationName <- "tyni.ai" 
-) |> ignore
 
-let app = builder.Build()
+let configureAppConfiguration (ctx: WebHostBuilderContext) (config: IConfigurationBuilder) =
+    config.SetBasePath(ctx.HostingEnvironment.ContentRootPath)
+        .AddEnvironmentVariables()
+    |> ignore
 
-rootHandler |> app.UseGiraffe
+builder.WebHost
+    .ConfigureLogging(configureLogging)
+    .ConfigureAppConfiguration(configureAppConfiguration)
+    .ConfigureServices(configureServices)
+    .Build()
+    |> ignore
+
+let configureApp (app: WebApplication) =
+        rootHandler |> app.UseGiraffe
+        app
+    
+let app = 
+    builder.Build() 
+    |> configureApp
+
 app.Run()
+

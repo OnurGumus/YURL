@@ -4,3 +4,6 @@ Microsoft.NET.Test.Sdk
 Expecto.FsCheck
 AltCover
 TickSpec
+Microsoft.AspNetCore.TestHost
+Giraffe
+

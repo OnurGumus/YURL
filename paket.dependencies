@@ -1,9 +1,10 @@
 source https://api.nuget.org/v3/index.json
 
+framework: net9.0
 storage: none
 
 nuget FSharp.Core
-nuget Giraffe
+nuget Giraffe 7.0.2
 nuget Hocon.Extensions.Configuration
 nuget Microsoft.Extensions.Logging.Console
 nuget Microsoft.Extensions.Hosting
@@ -12,10 +13,11 @@ nuget Microsoft.Extensions.Logging
 nuget System.Text.Json
 nuget Microsoft.Extensions.Http
 nuget Destructurama.FSharp
-nuget Fue
+nuget Fue 2.2
 nuget Expecto
 nuget YoloDev.Expecto.TestSdk 0.15.3
 nuget Microsoft.NET.Test.Sdk
 nuget Expecto.FsCheck
 nuget AltCover
 nuget TickSpec
+nuget Microsoft.AspNetCore.TestHost
