@@ -6,7 +6,7 @@ WORKDIR /App
 RUN apt-get update && apt-get install -y curl && \
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs && \
-    corepack enable && \
+    corepack enable
 
 # Copy solution and config files first
 COPY *.sln ./
@@ -15,12 +15,11 @@ COPY *.config ./
 # Copy dependency files
 COPY paket.lock paket.dependencies ./
 COPY paket-files/ paket-files/
-COPY package.json package-lock.json ./
+#COPY package.json package-lock.json ./
 
 # Install dependencies in a single layer - these are cached unless dependencies change
 RUN dotnet tool restore && \
-    dotnet paket restore && \
-    npm ci
+    dotnet paket restore
 
 
 # Copy and build Server project
@@ -29,12 +28,19 @@ COPY src/Server ./src/Server
 WORKDIR /App/src/Server
 RUN dotnet build -c Release
 
+# Copy and build Tst project
+WORKDIR /App
+COPY features ./features
+COPY test/IntegrationTest ./test/IntegrationTest
+WORKDIR /App/test/IntegrationTest
+RUN dotnet build -c Release IntegrationTest.fsproj
+
 # Final build and publish
 WORKDIR /App
 COPY Shorten.sln ./
 RUN dotnet restore && \
     dotnet build -c Release && \
-    dotnet run --project build/ -- -t PublishServer -s
+    dotnet publish src/Server/Server.fsproj -c Release -o deploy
 
 # Verify the publish output
 RUN ls -la /App/deploy

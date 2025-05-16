@@ -8,8 +8,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.fs" />
-    <Content Include="templates\**" />
-    <Content Include="wwwroot\**" />
-  </ItemGroup>
+    <Content Include="templates/**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot/**" >
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
