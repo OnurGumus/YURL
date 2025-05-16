@@ -33,7 +33,7 @@ let ``the page at (.*) returns HTML with title (.*)`` (url: string) (title: stri
 
         let handler = app.GetTestServer().CreateHandler()
         let httpClient = new HttpClient(handler)
-        let! response = httpClient.GetAsync("http://localhost:5020/") 
+        let! response = httpClient.GetAsync("http://localhost/") 
         printfn "response: %A" response.StatusCode
         let! content = response.Content.ReadAsStringAsync()
         printfn "content: %A" content

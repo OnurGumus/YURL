@@ -35,19 +35,24 @@ let configureLogging (ctx: WebHostBuilderContext) (logging: ILoggingBuilder) =
         logging.ClearProviders().AddConsole() |> ignore
 
 let configureAppConfiguration (ctx: WebHostBuilderContext) (config: IConfigurationBuilder) =
-    config.SetBasePath(ctx.HostingEnvironment.ContentRootPath)
+    if ctx.HostingEnvironment.IsDevelopment() then
+        ctx.HostingEnvironment.ContentRootPath  <- __SOURCE_DIRECTORY__
+    
+    config
+        .SetBasePath(ctx.HostingEnvironment.ContentRootPath)
         .AddEnvironmentVariables()
-    |> ignore
+        |> ignore
 
 builder.WebHost
     .ConfigureLogging(configureLogging)
     .ConfigureAppConfiguration(configureAppConfiguration)
     .ConfigureServices(configureServices)
-    .Build()
     |> ignore
 
 let configureApp (app: WebApplication) =
-        rootHandler |> app.UseGiraffe
+        app
+            .UseStaticFiles()
+            .UseGiraffe rootHandler
         app
     
 let app = 
