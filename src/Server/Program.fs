@@ -10,10 +10,11 @@ open Fue.Compiler
 open System.IO
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
+open System
 
 let builder= WebApplication.CreateBuilder()
 
-let rootHandler: HttpHandler =
+let indexPageHandler: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
         let contentRootPath =  ctx.GetWebHostEnvironment().ContentRootPath
         let indexHtml = Path.Combine(contentRootPath, "templates", "index.html")
@@ -24,6 +25,19 @@ let rootHandler: HttpHandler =
                 |> fromFile indexHtml
             return! htmlString compiledHtml next ctx
         }
+
+let slugHandler: HttpHandler =
+    fun (next: HttpFunc) (ctx: HttpContext) ->
+        task {
+            let guid = System.Guid.NewGuid().ToString()
+            return! json guid next ctx
+        }
+
+let webApp: HttpHandler =
+    choose [
+        GET >=> route "/" >=> indexPageHandler
+        GET >=> route "/api/slug" >=> slugHandler
+    ]
 
 let configureServices (services: IServiceCollection ) =
         services.AddGiraffe() |> ignore
@@ -52,7 +66,7 @@ builder.WebHost
 let configureApp (app: WebApplication) =
         app
             .UseStaticFiles()
-            .UseGiraffe rootHandler
+            .UseGiraffe webApp
         app
     
 let app = 

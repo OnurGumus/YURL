@@ -27,7 +27,7 @@ themeToggleButton.addEventListener('click', () => {
     localStorage.setItem('theme', newTheme);
 });
 
-shortenerForm.addEventListener('submit', function (event) {
+shortenerForm.addEventListener('submit', async function (event) {
     event.preventDefault();
     const longUrl = urlInput.value;
     if (!longUrl) { alert('AI_ERR//:INPUT_STREAM_REQUIRED'); return; } // Updated alert
@@ -37,9 +37,21 @@ shortenerForm.addEventListener('submit', function (event) {
         currentTypingTimeout = null;
     }
 
-    const mockSlug = Array(6).fill(0).map(() => Math.random().toString(36).charAt(2)).join('');
+    let slug = '';
+    try {
+        const response = await fetch('/api/slug');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        slug = await response.json();
+    } catch (error) {
+        console.error('Failed to fetch slug:', error);
+        alert('Failed to generate a short link. Please try again.');
+        return;
+    }
+
     // UPDATED SHORT URL DOMAIN
-    const fullShortenedUrl = `yurl.ai/${mockSlug}`;
+    const fullShortenedUrl = `yurl.ai/${slug}`;
 
     shortenedUrlDisplay.textContent = '';
     shortenedUrlDisplay.classList.remove('typing');
