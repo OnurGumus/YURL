@@ -12,6 +12,7 @@ open System.IO
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open System
+open ThrottlingTroll
 
 [<CLIMutable>]
 type UrlRequest = { Url: string }
@@ -45,9 +46,7 @@ let webApp () : HttpHandler =
         POST >=> route "/api/slug" >=> slugHandler
     ]
 
-
 let configureServices (services: IServiceCollection) =
-    // Add Giraffe services
     services.AddGiraffe() |> ignore
 
 let configureLogging (ctx: WebHostBuilderContext) (logging: ILoggingBuilder) =
@@ -69,8 +68,40 @@ builder.WebHost
     .ConfigureServices(configureServices)
 |> ignore
 
-let configureApp (app: WebApplication) =
-    app.UseStaticFiles().UseGiraffe(webApp ())
+let private getClientIp (request: obj) : string =
+    printfn "IPoo"
+    let proxyRequest = request :?> IIncomingHttpRequestProxy
+    match proxyRequest.Request.HttpContext.Connection.RemoteIpAddress with
+    | null -> "unknown_ip"
+    | addr ->
+        let ip = addr.ToString()
+        printfn "IP: %s" ip
+        ip
+
+// Helper function to create rules for the slug API
+let private createSlugApiRateLimitRule (limitMethod: ThrottlingTroll.RateLimitMethod) =
+    ThrottlingTrollRule(
+        UriPattern = "/api/slug", // Or "^/api/slug$" for exact regex match
+        Method = "POST",
+        LimitMethod = limitMethod,
+        IdentityIdExtractor = getClientIp
+    )
+
+let configureApp (app: WebApplication) : WebApplication =
+    app.UseStaticFiles()
+        .UseThrottlingTroll(fun opts -> 
+            let config = ThrottlingTrollConfig()
+
+            config.Rules <- [|
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 2, IntervalInSeconds = 60));
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 5, IntervalInSeconds = 60));
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 10, IntervalInSeconds = 3600));
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 20, IntervalInSeconds = 86400));
+            |]
+            
+            opts.Config <- config
+        )
+        .UseGiraffe(webApp ())
     app
 
 let app = builder.Build() |> configureApp
