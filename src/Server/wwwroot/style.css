@@ -48,6 +48,9 @@
     --blue-glow: oklch(78.7% 0.173 235.3 / 0.15);
     --blue-input-focus-shadow: oklch(78.7% 0.173 235.3 / 0.25);
 
+    --orange-glow-intense: oklch(69.8% 0.19 51.4 / 0.3); /* New more intense orange glow */
+    --blue-glow-intense: oklch(78.7% 0.173 235.3 / 0.25); /* New more intense blue glow */
+
     /* Aura Shadow Color Definitions - STATIC */
     --aura-orange-1: oklch(69.8% 0.19 51.4 / 0.1);
     --aura-orange-2: oklch(66.5% 0.202 39.8 / 0.07);
@@ -73,6 +76,7 @@
     --accent-primary: var(--orange-primary);
     --accent-secondary: var(--orange-secondary);
     --accent-glow: var(--orange-glow);
+    --accent-glow-intense: var(--orange-glow-intense); /* New for more intense hover */
     --input-focus-shadow: var(--orange-input-focus-shadow);
     --copy-button-hover-bg: var(--orange-secondary);
 
@@ -161,6 +165,7 @@
             --accent-primary: var(--blue-primary);
             --accent-secondary: var(--blue-secondary);
             --accent-glow: var(--blue-glow);
+            --accent-glow-intense: var(--blue-glow-intense); /* New for more intense hover */
             --input-focus-shadow: var(--blue-input-focus-shadow);
             --copy-button-hover-bg: var(--blue-secondary);
 
@@ -217,7 +222,7 @@
         position: fixed;
         inset-block-start: 1.25rem; /* 20px */
         inset-inline-end: 1.25rem; /* 20px */
-        background-color: transparent;
+        background-color: var(--accent-glow); /* More intense default background */
         color: var(--text-secondary);
         border: none;
         border-radius: 50%;
@@ -232,7 +237,7 @@
 
         &:hover {
             color: var(--accent-primary);
-            background-color: var(--accent-glow);
+            background-color: var(--accent-glow-intense); /* Even more intense background on hover */
         }
 
         & svg {
