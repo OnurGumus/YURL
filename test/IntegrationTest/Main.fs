@@ -38,6 +38,5 @@ let runFeatureTest featureName =
         })
 
 [<Tests>]
-let tests = 
-    testSequenced 
-    <| testList "Integration Tests" [ runFeatureTest "GenerateSlug" ]
+let tests =
+    testSequenced <| testList "Integration Tests" [ runFeatureTest "GenerateSlug" ]

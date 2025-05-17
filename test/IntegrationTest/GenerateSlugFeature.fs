@@ -5,11 +5,8 @@ open Expecto
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.TestHost
 open System.Net.Http
-open Giraffe
-open System.IO
-open System.Text.RegularExpressions
 
-open Microsoft.AspNetCore.Hosting;
+open Microsoft.AspNetCore.Hosting
 
 // Shared state for the test
 type TestContext = {
@@ -21,74 +18,85 @@ type TestContext = {
 let ``the URL store is empty`` () =
     // Just a setup step, we'll create the context in the next step
     ()
-        
+
 [<Given>]
-let ``no URL (.*) has been shortened yet`` (url: string) =
-    // Create and initialize the test context here
-    let builder = WebApplication.CreateBuilder()
-    builder.WebHost.UseTestServer()
+let ``no URL (.*) has been shortened yet`` (url: string) = ()
+// Create and initialize the test context here
+
+
+[<Given>]
+let ``the page at (.*) returns HTML with title (.*)`` (url: string) (title: string) =
+    (task {
+        let builder = WebApplication.CreateBuilder()
+
+        builder.WebHost
+            .UseTestServer()
             .ConfigureLogging(Program.configureLogging)
-            .ConfigureAppConfiguration(Program.configureAppConfiguration) 
+            .ConfigureAppConfiguration(Program.configureAppConfiguration)
             .ConfigureServices(Program.configureServices)
-            |> ignore
+        |> ignore
 
-    let app = builder.Build() |> Program.configureApp
-    app.StartAsync().Wait()
+        let app = builder.Build() |> Program.configureApp
+        app.StartAsync().Wait()
 
-    let handler = app.GetTestServer().CreateHandler()
-    let httpClient = new HttpClient(handler)
-    
-    { HttpClient = httpClient; GeneratedSlug = None }
+        let handler = app.GetTestServer().CreateHandler()
+        let httpClient = new HttpClient(handler)
 
-[<Given>]
-let ``the page at (.*) returns HTML with title (.*)`` (context: TestContext) (url: string) (title: string) =
-    (task{
-        return ()
-    }).Result
+        return {
+            HttpClient = httpClient
+            GeneratedSlug = None
+        }
+    })
+        .Result
 
 [<When>]
-let ``I shorten the URL (.*)`` (context: TestContext) (url: string) =
+let ``I shorten the URL (.*)`` (url: string) (context: TestContext) =
     (task {
+        // Create the request body
+        let requestBody = sprintf """{"url": %s}""" url
+
+        let content =
+            new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json")
+
         // Call the slug generation endpoint
-        let! response = context.HttpClient.GetAsync("http://localhost/api/slug")
+        let! response = context.HttpClient.PostAsync("http://localhost/api/slug", content)
         response.EnsureSuccessStatusCode() |> ignore
-        
+
         let! slugContent = response.Content.ReadAsStringAsync()
         // The response is a JSON string with quotes, we need to remove them
         let slug = slugContent.Trim('"')
         printfn "Generated slug: %s" slug
-        
+
         // Return updated context with the generated slug
-        return { context with GeneratedSlug = Some slug }
-    }).Result
+        return {
+            context with
+                GeneratedSlug = Some slug
+        }
+    })
+        .Result
 
 [<Then>]
-let ``the system should create the slug (.*)`` (context: TestContext) (expectedSlug: string) =
+let ``the system should create the slug (.*)`` (expectedSlug: string)  (context: TestContext) =
     match context.GeneratedSlug with
     | None -> failwith "No slug was generated"
     | Some slug ->
         // If expectedSlug is "*", we just verify that we got a GUID (not checking specific value)
         if expectedSlug = "*" then
             // Verify the slug is a valid GUID format
-            let isGuid = 
+            let isGuid =
                 match System.Guid.TryParse(slug) with
                 | true, _ -> true
                 | false, _ -> false
+
             Expect.isTrue isGuid "The generated slug should be a valid GUID"
         else
             // Otherwise check for the specific slug
             Expect.equal slug expectedSlug "The generated slug should match the expected slug"
+
     context
 
 [<Then>]
-let ``navigating to (.*) should redirect to (.*)`` (context: TestContext) (slug: string) (url: string) =
+let ``navigating to (.*) should redirect to (.*)`` (slug: string) (url: string) (context: TestContext) =
     // This is just a stub for now - we haven't implemented redirection functionality yet
     printfn "Redirection test is not implemented yet"
     context
-
-
-
-
-
-
-
