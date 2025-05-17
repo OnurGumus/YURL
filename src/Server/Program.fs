@@ -11,6 +11,13 @@ open System.IO
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open System
+open System.Text.Json.Serialization
+
+[<CLIMutable>]
+type UrlRequest = {
+    [<JsonPropertyName("Url")>]
+    Url: string
+}
 
 let builder= WebApplication.CreateBuilder()
 
@@ -29,14 +36,22 @@ let indexPageHandler: HttpHandler =
 let slugHandler: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
-            let guid = System.Guid.NewGuid().ToString()
+            // This helps in diagnosing by allowing a raw read after binding attempt.
+            ctx.Request.EnableBuffering()
+
+            // Attempt 1: Bind JSON to the UrlRequest type
+            let! url = ctx.BindModelAsync<UrlRequest>()
+            let logger = ctx.GetLogger "SlugHandler"
+            logger.LogInformation("Received URL: {Url}", url.Url)
+
+            let guid = Guid.NewGuid().ToString()
             return! json guid next ctx
         }
 
 let webApp: HttpHandler =
     choose [
         GET >=> route "/" >=> indexPageHandler
-        GET >=> route "/api/slug" >=> slugHandler
+        POST >=> route "/api/slug" >=> slugHandler
     ]
 
 let configureServices (services: IServiceCollection ) =

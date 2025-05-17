@@ -39,11 +39,21 @@ shortenerForm.addEventListener('submit', async function (event) {
 
     let slug = '';
     try {
-        const response = await fetch('/api/slug');
+        const requestBody = { url: longUrl };
+        console.log('Sending request body:', requestBody);
+        
+        const response = await fetch('/api/slug', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+        });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         slug = await response.json();
+        console.log('Received slug:', slug);
     } catch (error) {
         console.error('Failed to fetch slug:', error);
         alert('Failed to generate a short link. Please try again.');
