@@ -2,6 +2,42 @@
 
 /* Custom Properties */
 :root {
+    /* Font Families */
+    --font-primary: 'Inter', sans-serif;
+    --font-mono: 'Roboto Mono', monospace;
+    
+    /* Font Sizes */
+    --fs-xxl: 2.5rem;
+    --fs-xl: 2rem;
+    --fs-large: 1.15rem;
+    --fs-medium: 1.05rem;
+    --fs-body: 1rem;
+    --fs-small: 0.95rem;
+    --fs-xsmall: 0.9rem;
+    --fs-xxsmall: 0.85rem;
+    --fs-tiny: 0.8rem;
+    
+    /* Font Weights */
+    --fw-regular: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+    --fw-bold: 700;
+    --fw-extrabold: 800;
+    
+    /* Timing Values */
+    --time-fast: 0.2s;
+    --time-medium: 0.3s;
+    --time-slow: 0.4s;
+    --time-slower: 0.5s;
+    --time-slowest: 0.6s;
+    --time-animation: 1.3s;
+    
+    /* Animation Timing Functions */
+    --ease-standard: ease;
+    --ease-out: ease-out;
+    --ease-in-out: ease-in-out;
+    --ease-bounce: cubic-bezier(0.23, 1, 0.32, 1);
+    
     /* Accent Color Definitions */
     --orange-primary: oklch(69.8% 0.19 51.4);
     --orange-secondary: oklch(64.5% 0.173 50.5);
@@ -94,7 +130,7 @@
 
 @layer base {
     body {
-        font-family: 'Inter', sans-serif;
+        font-family: var(--font-primary);
         color: var(--text-primary);
         background-color: var(--bg-primary);
         display: flex;
@@ -105,7 +141,7 @@
         padding-block: 1.25rem; /* 20px */
         padding-inline: 1.25rem; /* 20px */
         overflow: hidden;
-        transition: background-color 0.4s ease, color 0.4s ease;
+        transition: background-color var(--time-slow) var(--ease-standard), color var(--time-slow) var(--ease-standard);
 
         &.light-mode {
             --bg-primary: oklch(93.4% 0.004 259.7);
@@ -162,11 +198,14 @@
             0 0 2.5rem 0.75rem var(--current-aura-2), /* 40px 12px */
             0 0 1.5625rem var(--accent-glow), /* 25px */
             0 0.625rem 1.875rem var(--shadow-color); /* 10px 30px */
-        transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+        transition: 
+            background-color var(--time-slow) var(--ease-standard), 
+            border-color var(--time-slow) var(--ease-standard), 
+            box-shadow var(--time-slow) var(--ease-standard);
         position: relative;
         transform-origin: center;
         opacity: 0;
-        animation: crtPowerOn 1.3s cubic-bezier(0.23, 1, 0.32, 1) 0.2s forwards;
+        animation: crtPowerOn var(--time-animation) var(--ease-bounce) 0.2s forwards;
         contain: layout paint;
 
         &::before,
@@ -177,7 +216,7 @@
             block-size: var(--corner-accent-size);
             border-color: var(--accent-primary);
             border-style: solid;
-            transition: border-color 0.4s ease;
+            transition: border-color var(--time-slow) var(--ease-standard);
         }
 
         &::before {
@@ -220,7 +259,7 @@
         justify-content: center;
         cursor: pointer;
         z-index: 1000;
-        transition: color 0.3s ease, background-color 0.3s ease;
+        transition: color var(--time-medium) var(--ease-standard), background-color var(--time-medium) var(--ease-standard);
 
         &:hover {
             color: var(--accent-primary);
@@ -237,9 +276,9 @@
 
 @layer components {
     .title {
-        font-family: 'Inter', sans-serif;
-        font-size: 2.5rem;
-        font-weight: 800;
+        font-family: var(--font-primary);
+        font-size: var(--fs-xxl);
+        font-weight: var(--fw-extrabold);
         letter-spacing: -0.0625rem; /* -1px */
         color: var(--text-primary);
         margin-block-end: 0.625rem; /* 10px */
@@ -249,13 +288,13 @@
         & .highlight {
             color: var(--accent-primary);
             text-shadow: 0 0 0.625rem var(--accent-primary); /* 10px */
-            transition: color 0.4s ease, text-shadow 0.4s ease;
+            transition: color var(--time-slow) var(--ease-standard), text-shadow var(--time-slow) var(--ease-standard);
         }
     }
 
     .subtitle {
-        font-family: 'Roboto Mono', monospace;
-        font-size: 0.95rem;
+        font-family: var(--font-mono);
+        font-size: var(--fs-small);
         font-style: italic;
         color: var(--text-secondary);
         line-height: 1.6;
@@ -286,7 +325,7 @@
             border-color: var(--input-border-color);
             border-style: solid;
             opacity: 0.6;
-            transition: border-color 0.3s ease, opacity 0.3s ease;
+            transition: border-color var(--time-medium) var(--ease-standard), opacity var(--time-medium) var(--ease-standard);
             pointer-events: none;
         }
 
@@ -313,14 +352,18 @@
         inline-size: 100%;
         padding-block: 1.125rem; /* 18px */
         padding-inline: 1.5625rem; /* 25px */
-        font-size: 1rem;
-        font-family: 'Roboto Mono', monospace;
+        font-size: var(--fs-body);
+        font-family: var(--font-mono);
         color: var(--text-primary);
         background: linear-gradient(180deg, var(--input-bg-darker), var(--input-bg));
         border: 1.5px solid var(--input-border-color);
         border-radius: 0.375rem; /* 6px */
         outline: none;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.4s ease, color 0.4s ease;
+        transition: 
+            border-color var(--time-fast) var(--ease-standard), 
+            box-shadow var(--time-fast) var(--ease-standard), 
+            background-color var(--time-slow) var(--ease-standard), 
+            color var(--time-slow) var(--ease-standard);
         position: relative;
         z-index: 1;
         box-shadow: inset 0 0.0625rem 0.1875rem oklch(0% 0 0 / 0.4); /* 1px 3px */
@@ -350,7 +393,10 @@
         inline-size: 0;
         block-size: 2px;
         background-color: var(--accent-primary);
-        transition: inline-size 0.3s ease 0.1s, inset-inline-start 0.3s ease 0.1s, background-color 0.4s ease;
+        transition: 
+            inline-size var(--time-medium) var(--ease-standard) 0.1s, 
+            inset-inline-start var(--time-medium) var(--ease-standard) 0.1s, 
+            background-color var(--time-slow) var(--ease-standard);
         border-radius: 0.0625rem; /* 1px */
         z-index: 2;
     }
@@ -359,20 +405,25 @@
         inline-size: 100%;
         padding-block: 1.125rem; /* 18px */
         padding-inline: 1.5625rem; /* 25px */
-        font-size: 1.05rem;
-        font-weight: 700;
-        font-family: 'Inter', sans-serif;
+        font-size: var(--fs-medium);
+        font-weight: var(--fw-bold);
+        font-family: var(--font-primary);
         color: var(--button-text-color);
         background: linear-gradient(45deg, var(--accent-secondary), var(--accent-primary));
         border: 1px solid var(--accent-primary);
         border-radius: 0.375rem; /* 6px */
         cursor: pointer;
-        transition: transform 0.2s ease-out, box-shadow 0.25s ease-out, background 0.25s ease-out, border-color 0.25s ease-out;
+        transition: 
+            transform var(--time-fast) ease-out, 
+            box-shadow var(--time-medium) ease-out, 
+            background var(--time-medium) ease-out, 
+            border-color var(--time-medium) ease-out;
         text-transform: uppercase;
         letter-spacing: 0.0625rem; /* 1px */
         box-shadow: 0 0 0.9375rem var(--accent-glow); /* 15px */
         position: relative;
         overflow: hidden;
+        contain: layout paint;
 
         &::before {
             content: '';
@@ -382,7 +433,7 @@
             inline-size: 100%;
             block-size: 100%;
             background: linear-gradient(90deg, transparent, oklch(100% 0 0 / 0.25), transparent);
-            transition: inset-inline-start 0.25s ease-out;
+            transition: inset-inline-start var(--time-medium) ease-out;
         }
 
         &:hover {
@@ -414,7 +465,16 @@
         border-style: solid;
         border-radius: 0.375rem; /* 6px */
         text-align: start;
-        transition: max-block-size 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease-in-out 0.1s, padding-block-start 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding-block-end 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), margin-block-start 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-width 0.4s ease-in-out, border-inline-start-width 0.4s ease-in-out 0.2s, background-color 0.4s ease, border-color 0.4s ease;
+        transition: 
+            max-block-size var(--time-slowest) cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+            opacity var(--time-slow) var(--ease-in-out) 0.1s, 
+            padding-block-start var(--time-slowest) cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+            padding-block-end var(--time-slowest) cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+            margin-block-start var(--time-slowest) cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+            border-width var(--time-slow) var(--ease-in-out), 
+            border-inline-start-width var(--time-slow) var(--ease-in-out) 0.2s, 
+            background-color var(--time-slow) var(--ease-standard), 
+            border-color var(--time-slow) var(--ease-standard);
         contain: layout paint;
 
         &.visible {
@@ -429,10 +489,10 @@
         }
 
         & p {
-            font-size: 0.9rem;
+            font-size: var(--fs-xsmall);
             color: var(--text-secondary);
             margin-block-end: 0.75rem; /* 12px */
-            font-family: 'Roboto Mono', monospace;
+            font-family: var(--font-mono);
             text-transform: uppercase;
             font-style: italic;
             padding-inline-start: 0.625rem; /* 10px */
@@ -452,21 +512,21 @@
         padding-inline: 1.125rem; /* 18px */
         border-radius: 0.25rem; /* 4px */
         border: 1px solid var(--border-color);
-        transition: background-color 0.4s ease, border-color 0.4s ease;
+        transition: background-color var(--time-slow) var(--ease-standard), border-color var(--time-slow) var(--ease-standard);
         margin-inline-start: 0.625rem; /* 10px */
         contain: content;
     }
 
     .shortened-url-display {
         flex-grow: 1;
-        font-size: 1.15rem;
-        font-family: 'Roboto Mono', monospace;
-        font-weight: 700;
+        font-size: var(--fs-large);
+        font-family: var(--font-mono);
+        font-weight: var(--fw-bold);
         color: var(--accent-primary);
         word-break: break-all;
         cursor: default;
         text-shadow: 0 0 0.3125rem var(--accent-glow); /* 5px */
-        transition: color 0.4s ease, text-shadow 0.4s ease;
+        transition: color var(--time-slow) var(--ease-standard), text-shadow var(--time-slow) var(--ease-standard);
         min-block-size: 1.2em;
         contain: layout;
 
@@ -485,15 +545,15 @@
     .copy-button {
         padding-block: 0.5625rem; /* 9px */
         padding-inline: 0.875rem; /* 14px */
-        font-size: 0.8rem;
-        font-family: 'Roboto Mono', monospace;
+        font-size: var(--fs-tiny);
+        font-family: var(--font-mono);
         text-transform: uppercase;
         color: var(--copy-button-text);
         background-color: var(--copy-button-bg);
         border: 1px solid var(--border-color);
         border-radius: 0.25rem; /* 4px */
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all var(--time-fast) var(--ease-standard);
         contain: layout paint;
 
         &:hover {
@@ -507,12 +567,12 @@
     .copy-feedback {
         display: block;
         margin-block-start: 0.625rem; /* 10px */
-        font-size: 0.85rem;
-        font-family: 'Roboto Mono', monospace;
+        font-size: var(--fs-xxsmall);
+        font-family: var(--font-mono);
         color: var(--accent-primary);
         opacity: 0;
         block-size: 1.2em;
-        transition: opacity 0.3s ease, color 0.4s ease;
+        transition: opacity var(--time-medium) var(--ease-standard), color var(--time-slow) var(--ease-standard);
         text-transform: lowercase;
         padding-inline-start: 0.625rem; /* 10px */
 
@@ -528,7 +588,7 @@
     .shortener-form,
     .result-area {
         opacity: 0;
-        animation: fadeInContent 0.5s ease-out 1.3s forwards;
+        animation: fadeInContent var(--time-slower) var(--ease-out) 1.3s forwards;
     }
 
     @keyframes crtPowerOn {
@@ -592,7 +652,7 @@
         padding-inline: 1.5625rem; /* 25px */
         margin-inline: 0.9375rem; /* 15px */
         margin-block-start: 1.25rem; /* 20px */
-        animation: crtPowerOn 1.1s cubic-bezier(0.23, 1, 0.32, 1) 0.1s forwards;
+        animation: crtPowerOn 1.1s var(--ease-bounce) 0.1s forwards;
     }
 
     .theme-toggle-button,
@@ -608,11 +668,11 @@
     }
 
     .title {
-        font-size: 2rem;
+        font-size: var(--fs-xl);
     }
 
     .subtitle {
-        font-size: 0.85rem;
+        font-size: var(--fs-xxsmall);
     }
 
     .url-input,
