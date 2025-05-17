@@ -167,6 +167,7 @@
         transform-origin: center;
         opacity: 0;
         animation: crtPowerOn 1.3s cubic-bezier(0.23, 1, 0.32, 1) 0.2s forwards;
+        contain: layout paint;
 
         &::before,
         &::after {
@@ -243,6 +244,7 @@
         color: var(--text-primary);
         margin-block-end: 0.625rem; /* 10px */
         text-transform: uppercase;
+        contain: layout;
 
         & .highlight {
             color: var(--accent-primary);
@@ -268,10 +270,12 @@
         display: flex;
         flex-direction: column;
         gap: 1.5625rem; /* 25px */
+        contain: content;
     }
 
     .input-group {
         position: relative;
+        contain: layout;
 
         &::before,
         &::after {
@@ -411,6 +415,7 @@
         border-radius: 0.375rem; /* 6px */
         text-align: start;
         transition: max-block-size 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease-in-out 0.1s, padding-block-start 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding-block-end 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), margin-block-start 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-width 0.4s ease-in-out, border-inline-start-width 0.4s ease-in-out 0.2s, background-color 0.4s ease, border-color 0.4s ease;
+        contain: layout paint;
 
         &.visible {
             max-block-size: 25rem; /* 400px */
@@ -449,6 +454,7 @@
         border: 1px solid var(--border-color);
         transition: background-color 0.4s ease, border-color 0.4s ease;
         margin-inline-start: 0.625rem; /* 10px */
+        contain: content;
     }
 
     .shortened-url-display {
@@ -462,6 +468,7 @@
         text-shadow: 0 0 0.3125rem var(--accent-glow); /* 5px */
         transition: color 0.4s ease, text-shadow 0.4s ease;
         min-block-size: 1.2em;
+        contain: layout;
 
         &.typing::after {
             content: '_';
@@ -487,6 +494,7 @@
         border-radius: 0.25rem; /* 4px */
         cursor: pointer;
         transition: all 0.2s ease;
+        contain: layout paint;
 
         &:hover {
             background-color: var(--copy-button-hover-bg);
