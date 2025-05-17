@@ -1,32 +1,32 @@
         :root {
             /* Accent Color Definitions */
-            --orange-primary: #FF7F00;
-            --orange-secondary: #D96D00;
-            --orange-glow: rgba(255, 127, 0, 0.2);
-            --orange-input-focus-shadow: rgba(255, 127, 0, 0.35);
-            --blue-primary: #00BFFF;
-            --blue-secondary: #0099CC;
-            --blue-glow: rgba(0, 191, 255, 0.15);
-            --blue-input-focus-shadow: rgba(0, 191, 255, 0.25);
+            --orange-primary: oklch(69.8% 0.19 51.4);
+            --orange-secondary: oklch(64.5% 0.173 50.5);
+            --orange-glow: oklch(69.8% 0.19 51.4 / 0.2);
+            --orange-input-focus-shadow: oklch(69.8% 0.19 51.4 / 0.35);
+            --blue-primary: oklch(78.7% 0.173 235.3);
+            --blue-secondary: oklch(69.4% 0.146 238.6);
+            --blue-glow: oklch(78.7% 0.173 235.3 / 0.15);
+            --blue-input-focus-shadow: oklch(78.7% 0.173 235.3 / 0.25);
 
             /* Aura Shadow Color Definitions - STATIC */
-            --aura-orange-1: rgba(255, 127, 0, 0.1);
-            --aura-orange-2: rgba(255, 90, 30, 0.07);
-            --aura-blue-1: rgba(0, 191, 255, 0.08);
-            --aura-blue-2: rgba(0, 150, 255, 0.06);
+            --aura-orange-1: oklch(69.8% 0.19 51.4 / 0.1);
+            --aura-orange-2: oklch(66.5% 0.202 39.8 / 0.07);
+            --aura-blue-1: oklch(78.7% 0.173 235.3 / 0.08);
+            --aura-blue-2: oklch(72.2% 0.192 247.8 / 0.06);
 
             /* Dark Mode (Default) */
-            --bg-primary: #050608;
-            --bg-secondary: #1A1D23;
-            --text-primary: #E0E0E5;
-            --text-secondary: #9999A5;
-            --border-color: #353941;
-            --input-border-color: #3A3E45;
-            --button-text-color: #FFFFFF;
-            --shadow-color: rgba(0, 0, 0, 0.65);
-            --input-bg: #13151A;
-            --input-bg-darker: #0D0F13;
-            --copy-button-bg: #1A1A1E;
+            --bg-primary: oklch(5.9% 0.004 261.8);
+            --bg-secondary: oklch(15.4% 0.009 260.5);
+            --text-primary: oklch(90.2% 0.004 264.4);
+            --text-secondary: oklch(65.7% 0.007 264.7);
+            --border-color: oklch(27.7% 0.009 258.2);
+            --input-border-color: oklch(29.8% 0.009 257.1);
+            --button-text-color: oklch(100% 0 0);
+            --shadow-color: oklch(0% 0 0 / 0.65);
+            --input-bg: oklch(12.8% 0.009 262.1);
+            --input-bg-darker: oklch(9.8% 0.008 263.9);
+            --copy-button-bg: oklch(14.6% 0.006 261.6);
             --copy-button-text: var(--text-secondary);
             --copy-button-hover-text: #FFFFFF;
             --corner-accent-size: 8px;
@@ -42,17 +42,17 @@
         }
 
         body.light-mode {
-            --bg-primary: #E9ECEF;
-            --bg-secondary: #FFFFFF;
-            --text-primary: #18181B;
-            --text-secondary: #585860;
-            --border-color: #E1E4E8;
-            --input-border-color: #CED3D9;
-            --button-text-color: #FFFFFF;
-            --shadow-color: rgba(0, 0, 0, 0.18);
-            --input-bg: #FCFCFD;
-            --input-bg-darker: #F5F6F7;
-            --copy-button-bg: #E5E5E8;
+            --bg-primary: oklch(93.4% 0.004 259.7);
+            --bg-secondary: oklch(100% 0 0);
+            --text-primary: oklch(13.4% 0.004 263.3);
+            --text-secondary: oklch(40.6% 0.006 263.6);
+            --border-color: oklch(91.1% 0.004 260.1);
+            --input-border-color: oklch(85.9% 0.005 257.6);
+            --button-text-color: oklch(100% 0 0);
+            --shadow-color: oklch(0% 0 0 / 0.18);
+            --input-bg: oklch(98.9% 0.001 266.5);
+            --input-bg-darker: oklch(96.7% 0.002 262.2);
+            --copy-button-bg: oklch(91.8% 0.003 264.2);
             --copy-button-text: var(--text-secondary);
             --copy-button-hover-text: #FFFFFF;
 
@@ -271,7 +271,7 @@
             transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.4s ease, color 0.4s ease;
             position: relative;
             z-index: 1;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+            box-shadow: inset 0 1px 3px oklch(0% 0 0 / 0.4);
         }
 
         .url-input::placeholder {
@@ -283,7 +283,7 @@
         .url-input:focus {
             border-color: var(--accent-primary);
             background: linear-gradient(180deg, var(--input-bg), var(--input-bg-darker));
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--accent-primary), 0 0 12px var(--accent-glow);
+            box-shadow: inset 0 1px 2px oklch(0% 0 0 / 0.5), 0 0 0 2px var(--accent-primary), 0 0 12px var(--accent-glow);
         }
 
         .input-focus-line {
@@ -330,7 +330,7 @@
             inset-inline-start: -100%;
             inline-size: 100%;
             block-size: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            background: linear-gradient(90deg, transparent, oklch(100% 0 0 / 0.25), transparent);
             transition: inset-inline-start 0.25s ease-out;
         }
 
