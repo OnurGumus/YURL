@@ -8,6 +8,24 @@ const themeToggleButton = document.getElementById('themeToggle');
 const bodyElement = document.body;
 let currentTypingTimeout = null;
 
+function isValidUrlFormat(url) {
+    if (!url) {
+        alert('URL input cannot be empty. Please enter a URL.');
+        return false;
+    }
+    if (url.includes(' ')) {
+        alert('Invalid URL format. URLs cannot contain spaces.');
+        return false;
+    }
+    // Basic check for a dot, not at the beginning or end, and something on both sides of the first dot.
+    const firstDotIndex = url.indexOf('.');
+    if (firstDotIndex === -1 || firstDotIndex === 0 || firstDotIndex === url.length - 1) {
+        alert('Invalid URL format. Please ensure it includes a valid domain name (e.g., example.com).');
+        return false;
+    }
+    return true;
+}
+
 function applyTheme(theme) {
     if (theme === 'light') { bodyElement.classList.add('light-mode'); }
     else { bodyElement.classList.remove('light-mode'); }
@@ -29,8 +47,11 @@ themeToggleButton.addEventListener('click', () => {
 
 shortenerForm.addEventListener('submit', async function (event) {
     event.preventDefault();
-    const longUrl = urlInput.value;
-    if (!longUrl) { alert('AI_ERR//:INPUT_STREAM_REQUIRED'); return; } // Updated alert
+    const longUrl = urlInput.value.trim(); // Trim whitespace
+
+    if (!isValidUrlFormat(longUrl)) {
+        return; // Stop if validation fails
+    }
 
     if (currentTypingTimeout) {
         clearTimeout(currentTypingTimeout);
