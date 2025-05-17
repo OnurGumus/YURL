@@ -28,8 +28,8 @@
             --input-bg-darker: oklch(9.8% 0.008 263.9);
             --copy-button-bg: oklch(14.6% 0.006 261.6);
             --copy-button-text: var(--text-secondary);
-            --copy-button-hover-text: #FFFFFF;
-            --corner-accent-size: 8px;
+            --copy-button-hover-text: oklch(100% 0 0);
+            --corner-accent-size: 0.5rem; /* 8px */
 
             --accent-primary: var(--orange-primary);
             --accent-secondary: var(--orange-secondary);
@@ -54,7 +54,7 @@
             --input-bg-darker: oklch(96.7% 0.002 262.2);
             --copy-button-bg: oklch(91.8% 0.003 264.2);
             --copy-button-text: var(--text-secondary);
-            --copy-button-hover-text: #FFFFFF;
+            --copy-button-hover-text: oklch(100% 0 0);
 
             --accent-primary: var(--blue-primary);
             --accent-secondary: var(--blue-secondary);
@@ -81,8 +81,8 @@
             align-items: center;
             justify-content: center;
             min-block-size: 100vh;
-            padding-block: 20px;
-            padding-inline: 20px;
+            padding-block: 1.25rem; /* 20px */
+            padding-inline: 1.25rem; /* 20px */
             overflow: hidden;
             transition: background-color 0.4s ease, color 0.4s ease;
         }
@@ -91,19 +91,19 @@
             0% {
                 transform: scaleX(0.02) scaleY(0.01);
                 opacity: 0;
-                filter: brightness(4) saturate(3) blur(3px);
+                filter: brightness(4) saturate(3) blur(0.1875rem); /* 3px */
             }
 
             20% {
                 transform: scaleX(1) scaleY(0.01);
                 opacity: 1;
-                filter: brightness(2.5) saturate(1.5) blur(1px);
+                filter: brightness(2.5) saturate(1.5) blur(0.0625rem); /* 1px */
             }
 
             40% {
                 transform: scaleX(1) scaleY(0.01);
                 opacity: 1;
-                filter: brightness(2) saturate(1.5) blur(0.5px);
+                filter: brightness(2) saturate(1.5) blur(0.03125rem); /* 0.5px */
             }
 
             85% {
@@ -121,16 +121,18 @@
 
         .container {
             inline-size: 100%;
-            max-inline-size: 580px;
+            max-inline-size: 36.25rem; /* 580px */
             text-align: center;
-            padding-block: 35px;
-            padding-inline: 40px;
+            padding-block: 2.1875rem; /* 35px */
+            padding-inline: 2.5rem; /* 40px */
             background-color: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 0.625rem; /* 10px */
             box-shadow:
-                0 0 20px 7px var(--current-aura-1), 0 0 40px 12px var(--current-aura-2),
-                0 0 25px var(--accent-glow), 0 10px 30px var(--shadow-color);
+                0 0 1.25rem 0.4375rem var(--current-aura-1), /* 20px 7px */
+                0 0 2.5rem 0.75rem var(--current-aura-2), /* 40px 12px */
+                0 0 1.5625rem var(--accent-glow), /* 25px (assuming this was intended to be 25px, like hover on shrink button, if not adjust) */
+                0 0.625rem 1.875rem var(--shadow-color); /* 10px 30px */
             transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
             position: relative;
             transform-origin: center;
@@ -170,7 +172,7 @@
             border-inline-start-width: 2px;
             border-block-end-width: 0;
             border-inline-end-width: 0;
-            border-start-start-radius: 10px;
+            border-start-start-radius: 0.625rem; /* 10px */
         }
 
         .container::after {
@@ -180,26 +182,26 @@
             border-inline-start-width: 0;
             border-block-end-width: 2px;
             border-inline-end-width: 2px;
-            border-end-end-radius: 10px;
+            border-end-end-radius: 0.625rem; /* 10px */
         }
 
         .title-group {
-            margin-block-end: 40px;
+            margin-block-end: 2.5rem; /* 40px */
         }
 
         .title {
             font-family: 'Inter', sans-serif;
             font-size: 2.5rem;
             font-weight: 800;
-            letter-spacing: -1px;
+            letter-spacing: -0.0625rem; /* -1px */
             color: var(--text-primary);
-            margin-block-end: 10px;
+            margin-block-end: 0.625rem; /* 10px */
             text-transform: uppercase;
         }
 
         .title .highlight {
             color: var(--accent-primary);
-            text-shadow: 0 0 10px var(--accent-primary);
+            text-shadow: 0 0 0.625rem var(--accent-primary); /* 10px */
             transition: color 0.4s ease, text-shadow 0.4s ease;
         }
 
@@ -219,7 +221,7 @@
         .shortener-form {
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 1.5625rem; /* 25px */
         }
 
         .input-group {
@@ -230,8 +232,8 @@
         .input-group::after {
             content: '';
             position: absolute;
-            inline-size: 12px;
-            block-size: 12px;
+            inline-size: 0.75rem; /* 12px */
+            block-size: 0.75rem; /* 12px */
             border-color: var(--input-border-color);
             border-style: solid;
             opacity: 0.6;
@@ -240,8 +242,8 @@
         }
 
         .input-group::before {
-            inset-block-start: 8px;
-            inset-inline-start: 8px;
+            inset-block-start: 0.5rem; /* 8px */
+            inset-inline-start: 0.5rem; /* 8px */
             border-block-start-width: 1.5px;
             border-inline-start-width: 1.5px;
             border-block-end-width: 0;
@@ -249,8 +251,8 @@
         }
 
         .input-group::after {
-            inset-block-end: 8px;
-            inset-inline-end: 8px;
+            inset-block-end: 0.5rem; /* 8px */
+            inset-inline-end: 0.5rem; /* 8px */
             border-block-start-width: 0;
             border-inline-start-width: 0;
             border-block-end-width: 1.5px;
@@ -259,19 +261,19 @@
 
         .url-input {
             inline-size: 100%;
-            padding-block: 18px;
-            padding-inline: 25px;
+            padding-block: 1.125rem; /* 18px */
+            padding-inline: 1.5625rem; /* 25px */
             font-size: 1rem;
             font-family: 'Roboto Mono', monospace;
             color: var(--text-primary);
             background: linear-gradient(180deg, var(--input-bg-darker), var(--input-bg));
             border: 1.5px solid var(--input-border-color);
-            border-radius: 6px;
+            border-radius: 0.375rem; /* 6px */
             outline: none;
             transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.4s ease, color 0.4s ease;
             position: relative;
             z-index: 1;
-            box-shadow: inset 0 1px 3px oklch(0% 0 0 / 0.4);
+            box-shadow: inset 0 0.0625rem 0.1875rem oklch(0% 0 0 / 0.4); /* 1px 3px */
         }
 
         .url-input::placeholder {
@@ -283,7 +285,7 @@
         .url-input:focus {
             border-color: var(--accent-primary);
             background: linear-gradient(180deg, var(--input-bg), var(--input-bg-darker));
-            box-shadow: inset 0 1px 2px oklch(0% 0 0 / 0.5), 0 0 0 2px var(--accent-primary), 0 0 12px var(--accent-glow);
+            box-shadow: inset 0 0.0625rem 0.125rem oklch(0% 0 0 / 0.5), 0 0 0 0.125rem var(--accent-primary), 0 0 0.75rem var(--accent-glow); /* 1px 2px, 2px, 12px */
         }
 
         .input-focus-line {
@@ -294,31 +296,31 @@
             block-size: 2px;
             background-color: var(--accent-primary);
             transition: inline-size 0.3s ease 0.1s, inset-inline-start 0.3s ease 0.1s, background-color 0.4s ease;
-            border-radius: 1px;
+            border-radius: 0.0625rem; /* 1px */
             z-index: 2;
         }
 
         .url-input:focus~.input-focus-line {
-            inline-size: calc(100% + 3px);
+            inline-size: calc(100% + 0.1875rem); /* 3px */
             inset-inline-start: -1.5px;
         }
 
         .shrink-button {
             inline-size: 100%;
-            padding-block: 18px;
-            padding-inline: 25px;
+            padding-block: 1.125rem; /* 18px */
+            padding-inline: 1.5625rem; /* 25px */
             font-size: 1.05rem;
             font-weight: 700;
             font-family: 'Inter', sans-serif;
             color: var(--button-text-color);
             background: linear-gradient(45deg, var(--accent-secondary), var(--accent-primary));
             border: 1px solid var(--accent-primary);
-            border-radius: 6px;
+            border-radius: 0.375rem; /* 6px */
             cursor: pointer;
             transition: transform 0.2s ease-out, box-shadow 0.25s ease-out, background 0.25s ease-out, border-color 0.25s ease-out;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 0 15px var(--accent-glow);
+            letter-spacing: 0.0625rem; /* 1px */
+            box-shadow: 0 0 0.9375rem var(--accent-glow); /* 15px */
             position: relative;
             overflow: hidden;
         }
@@ -339,13 +341,13 @@
         }
 
         .shrink-button:hover {
-            box-shadow: 0 0 25px 5px var(--accent-primary);
-            transform: translateY(-2px);
+            box-shadow: 0 0 1.5625rem 0.3125rem var(--accent-primary); /* 25px 5px */
+            transform: translateY(-0.125rem); /* -2px */
         }
 
         .shrink-button:active {
             transform: translateY(0px) scale(0.98);
-            box-shadow: 0 0 10px var(--accent-glow);
+            box-shadow: 0 0 0.625rem var(--accent-glow); /* 10px */
         }
 
         .result-area {
@@ -360,17 +362,17 @@
             background-color: var(--input-bg);
             border-color: var(--border-color);
             border-style: solid;
-            border-radius: 6px;
+            border-radius: 0.375rem; /* 6px */
             text-align: start;
             transition: max-block-size 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease-in-out 0.1s, padding-block-start 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding-block-end 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), margin-block-start 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-width 0.4s ease-in-out, border-inline-start-width 0.4s ease-in-out 0.2s, background-color 0.4s ease, border-color 0.4s ease;
         }
 
         .result-area.visible {
-            max-block-size: 400px;
+            max-block-size: 25rem; /* 400px */
             opacity: 1;
-            padding-block-start: 25px;
-            padding-block-end: 25px;
-            margin-block-start: 35px;
+            padding-block-start: 1.5625rem; /* 25px */
+            padding-block-end: 1.5625rem; /* 25px */
+            margin-block-start: 2.1875rem; /* 35px */
             border-width: 1px;
             border-inline-start-width: 3px;
             border-inline-start-color: var(--accent-primary);
@@ -379,11 +381,11 @@
         .result-area p {
             font-size: 0.9rem;
             color: var(--text-secondary);
-            margin-block-end: 12px;
+            margin-block-end: 0.75rem; /* 12px */
             font-family: 'Roboto Mono', monospace;
             text-transform: uppercase;
             font-style: italic;
-            padding-inline-start: 10px;
+            padding-inline-start: 0.625rem; /* 10px */
         }
 
         .result-area p::before {
@@ -393,14 +395,14 @@
         .shortened-url-container {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 0.75rem; /* 12px */
             background-color: var(--bg-secondary);
-            padding-block: 15px;
-            padding-inline: 18px;
-            border-radius: 4px;
+            padding-block: 0.9375rem; /* 15px */
+            padding-inline: 1.125rem; /* 18px */
+            border-radius: 0.25rem; /* 4px */
             border: 1px solid var(--border-color);
             transition: background-color 0.4s ease, border-color 0.4s ease;
-            margin-inline-start: 10px;
+            margin-inline-start: 0.625rem; /* 10px */
         }
 
         .shortened-url-display {
@@ -411,7 +413,7 @@
             color: var(--accent-primary);
             word-break: break-all;
             cursor: default;
-            text-shadow: 0 0 5px var(--accent-glow);
+            text-shadow: 0 0 0.3125rem var(--accent-glow); /* 5px */
             transition: color 0.4s ease, text-shadow 0.4s ease;
             min-block-size: 1.2em;
         }
@@ -421,14 +423,13 @@
             display: inline-block;
             animation: blink-caret 0.8s step-end infinite;
             color: var(--accent-primary);
-            margin-inline-start: 3px;
+            margin-inline-start: 0.1875rem; /* 3px */
             font-weight: bold;
             position: relative;
             inset-block-start: -1px;
         }
 
         @keyframes blink-caret {
-
             from,
             to {
                 opacity: 1;
@@ -440,15 +441,15 @@
         }
 
         .copy-button {
-            padding-block: 9px;
-            padding-inline: 14px;
+            padding-block: 0.5625rem; /* 9px */
+            padding-inline: 0.875rem; /* 14px */
             font-size: 0.8rem;
             font-family: 'Roboto Mono', monospace;
             text-transform: uppercase;
             color: var(--copy-button-text);
             background-color: var(--copy-button-bg);
             border: 1px solid var(--border-color);
-            border-radius: 4px;
+            border-radius: 0.25rem; /* 4px */
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -462,7 +463,7 @@
 
         .copy-feedback {
             display: block;
-            margin-block-start: 10px;
+            margin-block-start: 0.625rem; /* 10px */
             font-size: 0.85rem;
             font-family: 'Roboto Mono', monospace;
             color: var(--accent-primary);
@@ -470,7 +471,7 @@
             block-size: 1.2em;
             transition: opacity 0.3s ease, color 0.4s ease;
             text-transform: lowercase;
-            padding-inline-start: 10px;
+            padding-inline-start: 0.625rem; /* 10px */
         }
 
         .copy-feedback::before {
@@ -479,14 +480,14 @@
 
         .theme-toggle-button {
             position: fixed;
-            inset-block-start: 20px;
-            inset-inline-end: 20px;
+            inset-block-start: 1.25rem; /* 20px */
+            inset-inline-end: 1.25rem; /* 20px */
             background-color: transparent;
             color: var(--text-secondary);
             border: none;
             border-radius: 50%;
-            inline-size: 40px;
-            block-size: 40px;
+            inline-size: 2.5rem; /* 40px */
+            block-size: 2.5rem; /* 40px */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -501,8 +502,8 @@
         }
 
         .theme-toggle-button svg {
-            inline-size: 20px;
-            block-size: 20px;
+            inline-size: 1.25rem; /* 20px */
+            block-size: 1.25rem; /* 20px */
             fill: currentColor;
         }
 
@@ -525,10 +526,10 @@
             }
 
             .container {
-                padding-block: 25px;
-                padding-inline: 25px;
-                margin-inline: 15px;
-                margin-block-start: 20px;
+                padding-block: 1.5625rem; /* 25px */
+                padding-inline: 1.5625rem; /* 25px */
+                margin-inline: 0.9375rem; /* 15px */
+                margin-block-start: 1.25rem; /* 20px */
                 animation: crtPowerOn 1.1s cubic-bezier(0.23, 1, 0.32, 1) 0.1s forwards;
             }
 
@@ -540,8 +541,8 @@
             }
 
             .theme-toggle-button {
-                inset-block-start: 15px;
-                inset-inline-end: 15px;
+                inset-block-start: 0.9375rem; /* 15px */
+                inset-inline-end: 0.9375rem; /* 15px */
             }
 
             .title {
@@ -554,8 +555,8 @@
 
             .url-input,
             .shrink-button {
-                padding-block: 16px;
-                padding-inline: 20px;
+                padding-block: 1rem; /* 16px */
+                padding-inline: 1.25rem; /* 20px */
                 font-size: 0.95rem;
             }
 
@@ -564,7 +565,7 @@
             }
 
             .result-area.visible {
-                padding-block-start: 20px;
-                padding-block-end: 20px;
+                padding-block-start: 1.25rem; /* 20px */
+                padding-block-end: 1.25rem; /* 20px */
             }
         }
