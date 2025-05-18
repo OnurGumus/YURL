@@ -14,9 +14,10 @@ let handleEventWrapper env (offsetValue: int64) (event:obj)=
     let dataEvent =
         match event with
         | :? FCQRS.Common.Event<UrlHash.Event> as  event ->
-            printfn "!!Event: %A" event
-
-            [event:> IMessageWithCID]
+            match event.EventDetails with
+            | UrlHash.ProcessCompleted as _ ->
+                [event:> IMessageWithCID]
+            | _ ->[]
         |  _ -> []
 
     dataEvent

@@ -39,7 +39,9 @@ let slugHandler: HttpHandler =
             let cqrsService = ctx.GetService<Bootstrap.CQRSService>()
             let url = url.Url |>ValueLens.TryCreate |> Result.value
             let cid = cid()
+            let s = cqrsService.Sub.Subscribe((fun e -> e.CID = cid), 1) |> Async.StartAsTask
             let! slug = cqrsService.GenerateSlug cid url
+            use! result = s
             let logger = ctx.GetLogger "SlugHandler"
             logger.LogInformation("Received URL: {Url}", url)
 

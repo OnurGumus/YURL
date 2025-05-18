@@ -39,7 +39,7 @@ let ``the page at (.*) returns HTML with title (.*)`` (url: string) (title: stri
                 configurationBuilder.AddInMemoryCollection([ 
                     ("config:connection-string", $"Data Source={path}")
                     ("config:akka:persistence:journal:sql:connection-string", $"Data Source={path}")
-                    ("config:akka:persistence:query.journal.sql:connection-string", $"Data Source={path}")
+                    ("config:akka:persistence:query:journal:sql:connection-string", $"Data Source={path}")
                     ("config:akka:persistence:snapshot-store:connection-string", $"Data Source={path}")
                     ] |> Map.ofList)
                 |> ignore)
