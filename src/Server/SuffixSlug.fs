@@ -23,13 +23,11 @@ let applyEvent event state =
 
 let handleCommand (cmd: Command<_>) state =
     match cmd.CommandDetails, (state:State) with
+    
     | GenerateSuffix slug, { RootSlug = None} ->
-        let baseUrl = slug |> ValueLens.Value |> ValueLens.Value
-        let slug:Slug = baseUrl |> ValueLens.CreateAsResult |> Result.value
         SuffixGenerated (slug, NoSuffix) |> PersistEvent
-    | GenerateSuffix url, { RootSlug = Some slug} ->
-        let baseUrl = url |> ValueLens.Value |> ValueLens.Value
-        let newSlug:Slug = baseUrl |> ValueLens.CreateAsResult |> Result.value
+
+    | GenerateSuffix (Value (ResultValue baseUrl) as newSlug), { RootSlug = Some slug} ->
         if slug <> newSlug then
             SlugMismatch (slug, newSlug) |> DeferEvent
         else
