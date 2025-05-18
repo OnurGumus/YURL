@@ -1,5 +1,5 @@
 config {
-     connection-string = "Data Source=/workspaces/shorten/shorten.db;"
+     connection-string = "Data Source=shorten.db;"
      akka {
         
           persistence {

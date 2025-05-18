@@ -5,7 +5,7 @@ open Expecto
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.TestHost
 open System.Net.Http
-
+open Microsoft.Extensions.Configuration
 open Microsoft.AspNetCore.Hosting
 
 // Shared state for the test
@@ -32,8 +32,18 @@ let ``the page at (.*) returns HTML with title (.*)`` (url: string) (title: stri
         builder.WebHost
             .UseTestServer()
             .ConfigureLogging(Program.configureLogging)
-            .ConfigureAppConfiguration(Program.configureAppConfiguration)
-            .ConfigureServices(Program.configureServices)
+            .ConfigureAppConfiguration(fun ctx configurationBuilder ->
+                Program.configureAppConfiguration ctx configurationBuilder
+                let path = System.IO.Path.GetTempFileName()
+                printfn "Using in-memory configuration file: %s" path
+                configurationBuilder.AddInMemoryCollection([ 
+                    ("config:connection-string", $"Data Source={path}")
+                    ("config:akka:persistence:journal:sql:connection-string", $"Data Source={path}")
+                    ("config:akka:persistence:query.journal.sql:connection-string", $"Data Source={path}")
+                    ("config:akka:persistence:snapshot-store:connection-string", $"Data Source={path}")
+                    ] |> Map.ofList)
+                |> ignore)
+            .ConfigureServices Program.configureServices
         |> ignore
 
         let app = builder.Build() |> Program.configureApp
@@ -76,7 +86,7 @@ let ``I shorten the URL (.*)`` (url: string) (context: TestContext) =
         .Result
 
 [<Then>]
-let ``the system should create the slug (.*)`` (expectedSlug: string)  (context: TestContext) =
+let ``the system should create the slug (.*)`` (expectedSlug: string) (context: TestContext) =
     match context.GeneratedSlug with
     | None -> failwith "No slug was generated"
     | Some slug ->
