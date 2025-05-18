@@ -17,3 +17,15 @@ type Url =
 
     member this.IsValid = ValueLens.IsValidValue this
     override this.ToString() = (ValueLens.Value this).ToString()
+
+
+type Slug = 
+    private Slug of Url
+
+    with static member Value_ =
+            (fun (Slug s) -> s),
+            (fun (s: Url) _ -> Slug s )
+
+            member this.IsValid = 
+                    ValueLens.IsValidValue (this |> ValueLens.Value)
+            override this.ToString() = (ValueLens.Value this).ToString()

@@ -1,24 +1,20 @@
-module UrlHash
+module PrefixSlug
 
 open FCQRS.Common
 open Model
 
 type Event =
-    | ProcessCompleted
-    | UrlProcessingStarted of Url
-    | AlreadyProcessing
-    | AlreadyProcessed
+    | PrefixGenerated of Slug
 
 type Command =
-    | ProcessUrl of Url
-    | Confirm
+    | GenratePrefix of Url
 
-type ProcessState =
+type r =
     | NotStarted
     | Processing
     | Completed 
 
-type State = { ProcessState: ProcessState }
+type State = { LastPrefix: ProcessState }
 
 let applyEvent event state =
     match event.EventDetails with
@@ -29,10 +25,10 @@ let applyEvent event state =
 let handleCommand (cmd: Command<_>) state =
     match cmd.CommandDetails, state.ProcessState with
     | ProcessUrl url, NotStarted -> UrlProcessingStarted url |> PersistEvent
-    | Confirm, Processing -> ProcessCompleted |> PersistEvent
+    | CompleteProcess, Processing -> ProcessCompleted |> PersistEvent
     | ProcessUrl _,  Processing -> AlreadyProcessing |> DeferEvent
     | ProcessUrl _, Completed -> AlreadyProcessed |> DeferEvent
-    | Confirm, _ -> AlreadyProcessed |> DeferEvent
+    | CompleteProcess, _ -> AlreadyProcessed |> DeferEvent
 
 let init (env: _) (actorApi: IActor) =
     let initialState = { ProcessState = NotStarted }

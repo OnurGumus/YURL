@@ -9,7 +9,10 @@
   <ItemGroup>
     <Compile Include="Environments.fs" />
     <Compile Include="Model.fs" />
+    <Compile Include="GenerateSlug.fs" />
+    <Compile Include="SuffixSlug.fs" />
     <Compile Include="UrlHash.fs" />
+    <Compile Include="UrlHashSaga.fs" />
     <Compile Include="Query.fs" />
     <Compile Include="Bootstrap.fs" />
     <Compile Include="Program.fs" />

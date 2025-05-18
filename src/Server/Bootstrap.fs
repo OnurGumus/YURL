@@ -19,14 +19,16 @@ type CQRSService(env: Environments.AppEnv) =
     inherit BackgroundService()
     let actorApi = FCQRS.Actor.api env
     let urlHashShard = UrlHash.factory env actorApi
+    let suffixSlugShard = SuffixSlug.factory env actorApi
+    let urlHashSaga = UrlHashSaga.factory env actorApi
 
     let mutable sub:ISubscribe<_>= Unchecked.defaultof<_>
 
 
     member this.GenerateSlug cid (url:Model.Url) =
         let urlString = url |> ValueLens.Value
-        let hash = urlString |> generateHash
-        let actorId: ActorId = Guid.NewGuid().ToString() |> ValueLens.CreateAsResult |> Result.value
+        let hash = "UrlHash_" + urlString |> generateHash
+        let actorId: ActorId = hash |> ValueLens.CreateAsResult |> Result.value
 
         let command = url |> UrlHash.ProcessUrl
 
@@ -54,11 +56,21 @@ type CQRSService(env: Environments.AppEnv) =
     override _.ExecuteAsync(_stoppingToken: CancellationToken) =
         task {
 
-            let sagaCheck (o: obj) = []
+            let sagaCheck (o: obj) =
+                match o with
+                | :? (FCQRS.Common.Event<UrlHash.Event>) as e ->
+                    match e.EventDetails with
+                    | UrlHash.UrlProcessingStarted _ -> [ urlHashSaga, id |> Some |> PrefixConversion, o ]
+                    | _ -> []
+                | _ -> []
+
             
             actorApi.InitializeSagaStarter sagaCheck
 
             UrlHash.init env actorApi |> ignore
+            SuffixSlug.init env actorApi |> ignore
+            UrlHashSaga.init env actorApi |> ignore
+            
             
             sub <- FCQRS.Query.init actorApi 0 (Query.handleEventWrapper env)
 
