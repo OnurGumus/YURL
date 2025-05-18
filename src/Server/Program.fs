@@ -13,10 +13,13 @@ open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open System
 open ThrottlingTroll
+open Hocon.Extensions.Configuration
+open FCQRS.Model.Data
 
 [<CLIMutable>]
 type UrlRequest = { Url: string }
-
+let cid (): CID =
+    System.Guid.NewGuid().ToString() |> ValueLens.CreateAsResult |> Result.value
 let builder = WebApplication.CreateBuilder()
 
 let indexPageHandler: HttpHandler =
@@ -33,8 +36,12 @@ let slugHandler: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
             let! url = ctx.BindModelAsync<UrlRequest>()
+            let cqrsService = ctx.GetService<Bootstrap.CQRSService>()
+            let url = url.Url |>ValueLens.TryCreate |> Result.value
+            let cid = cid()
+            let! slug = cqrsService.GenerateSlug cid url
             let logger = ctx.GetLogger "SlugHandler"
-            logger.LogInformation("Received URL: {Url}", url.Url)
+            logger.LogInformation("Received URL: {Url}", url)
 
             let guid = Guid.NewGuid().ToString()
             return! json guid next ctx
@@ -49,7 +56,9 @@ let webApp () : HttpHandler =
 let configureServices (services: IServiceCollection) =
     services
         .AddGiraffe()
-        .AddHostedService<Bootstrap.CQRSService>()
+        .AddSingleton<Environments.AppEnv>()
+        .AddSingleton<Bootstrap.CQRSService>()
+        .AddHostedService<Bootstrap.CQRSService>(fun p -> p.GetRequiredService<Bootstrap.CQRSService>())
         |> ignore
 
 let configureLogging (ctx: WebHostBuilderContext) (logging: ILoggingBuilder) =
@@ -62,7 +71,10 @@ let configureAppConfiguration (ctx: WebHostBuilderContext) (config: IConfigurati
     if ctx.HostingEnvironment.IsDevelopment() then
         ctx.HostingEnvironment.ContentRootPath <- __SOURCE_DIRECTORY__
 
-    config.SetBasePath(ctx.HostingEnvironment.ContentRootPath).AddEnvironmentVariables()
+    config
+        .SetBasePath(ctx.HostingEnvironment.ContentRootPath)
+        .AddHoconFile("config.hocon")
+        .AddEnvironmentVariables()
     |> ignore
 
 builder.WebHost

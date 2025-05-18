@@ -26,7 +26,7 @@ type CQRSService(env: Environments.AppEnv) =
     member this.GenerateSlug cid (url:Model.Url) =
         let urlString = url |> ValueLens.Value
         let hash = urlString |> generateHash
-        let actorId: ActorId = hash |> ValueLens.CreateAsResult |> Result.value
+        let actorId: ActorId = Guid.NewGuid().ToString() |> ValueLens.CreateAsResult |> Result.value
 
         let command = url |> UrlHash.ProcessUrl
 

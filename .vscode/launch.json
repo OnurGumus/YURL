@@ -13,7 +13,7 @@
             "cwd": "${workspaceFolder}/src/Server",
             "console": "integratedTerminal",
             "stopAtEntry": false,
-            "justMyCode": true,
+            "justMyCode": false,
             "requireExactSource": true, 
             "suppressJITOptimizations": true, // it's better to set true for local debugging
             "enableStepFiltering": false, // to step into properties

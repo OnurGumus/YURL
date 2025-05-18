@@ -1,10 +1,7 @@
 config {
-     connection-string = "Data Source=shorten.db;"
+     connection-string = "Data Source=/workspaces/shorten/shorten.db;"
      akka {
-          scheduler {
-         implementation = "FCQRS.Scheduler+ObservingScheduler, FCQRS"
-        // implementation = "Akka.TestKit.TestScheduler, Akka.TestKit"
-          }
+        
           persistence {
                journal {
                     plugin = "akka.persistence.journal.sql"
