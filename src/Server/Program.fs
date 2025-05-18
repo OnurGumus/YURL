@@ -47,7 +47,10 @@ let webApp () : HttpHandler =
     ]
 
 let configureServices (services: IServiceCollection) =
-    services.AddGiraffe() |> ignore
+    services
+        .AddGiraffe()
+        .AddHostedService<Bootstrap.CQRSService>()
+        |> ignore
 
 let configureLogging (ctx: WebHostBuilderContext) (logging: ILoggingBuilder) =
     if ctx.HostingEnvironment.IsDevelopment() then

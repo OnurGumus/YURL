@@ -7,13 +7,18 @@
     <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Environments.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="UrlHash.fs" />
+    <Compile Include="Query.fs" />
+    <Compile Include="Bootstrap.fs" />
     <Compile Include="Program.fs" />
     <Content Include="templates/**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="wwwroot/**" >
+    <Content Include="wwwroot/**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    </ItemGroup>
+  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

@@ -10,3 +10,7 @@ Microsoft.Extensions.Http
 Destructurama.FSharp
 Fue
 ThrottlingTroll
+FCQRS
+FCQRS.Model
+FCQRS.Serialization
+FCQRS.SqlProvider

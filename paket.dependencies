@@ -22,3 +22,7 @@ nuget Expecto.FsCheck
 nuget AltCover
 nuget TickSpec
 nuget Microsoft.AspNetCore.TestHost
+nuget FCQRS
+nuget FCQRS.Model
+nuget FCQRS.Serialization
+nuget FCQRS.SqlProvider
