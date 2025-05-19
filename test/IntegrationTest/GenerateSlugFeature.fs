@@ -34,13 +34,14 @@ let ``the page at (.*) returns HTML with title (.*)`` (url: string) (title: stri
             .ConfigureLogging(Program.configureLogging)
             .ConfigureAppConfiguration(fun ctx configurationBuilder ->
                 Program.configureAppConfiguration ctx configurationBuilder
-                let path = System.IO.Path.GetTempFileName()
+                let path = System.IO.Path.GetTempFileName() + ".db"
                 printfn "Using in-memory configuration file: %s" path
+                let connectionString = $"Data Source={path}"
                 configurationBuilder.AddInMemoryCollection([ 
-                    ("config:connection-string", $"Data Source={path}")
-                    ("config:akka:persistence:journal:sql:connection-string", $"Data Source={path}")
-                    ("config:akka:persistence:query:journal:sql:connection-string", $"Data Source={path}")
-                    ("config:akka:persistence:snapshot-store:connection-string", $"Data Source={path}")
+                    "config:connection-string",  connectionString
+                    "config:akka:persistence:journal:sql:connection-string",  connectionString
+                    "config:akka:persistence:query:journal:sql:connection-string", connectionString
+                    "config:akka:persistence:snapshot-store:sql:connection-string", connectionString
                     ] |> Map.ofList)
                 |> ignore)
             .ConfigureServices Program.configureServices

@@ -41,7 +41,8 @@ let slugHandler: HttpHandler =
             let cid = cid()
             use s = cqrsService.Sub.Subscribe((fun e -> e.CID = cid), 1) 
             let! slug = cqrsService.GenerateSlug cid url
-            s.Task.Wait()
+            if slug.IsOk then
+                s.Task.Wait()
             
             let logger = ctx.GetLogger "SlugHandler"
             logger.LogInformation("Slug generated: {Slug}", slug)
