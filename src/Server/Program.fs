@@ -16,6 +16,10 @@ open ThrottlingTroll
 open Hocon.Extensions.Configuration
 open FCQRS.Model.Data
 
+#if DEBUG
+Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
+#endif
+
 [<CLIMutable>]
 type UrlRequest = { Url: string }
 let cid (): CID =

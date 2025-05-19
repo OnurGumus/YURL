@@ -24,7 +24,9 @@
     <Content Include="wwwroot/**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Folder Include="Database\" />
+    <Content Include="Database\**" Exclude="**/*.db*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
