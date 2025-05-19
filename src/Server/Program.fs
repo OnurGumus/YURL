@@ -88,13 +88,11 @@ builder.WebHost
 |> ignore
 
 let private getClientIp (request: obj) : string =
-    printfn "IPoo"
     let proxyRequest = request :?> IIncomingHttpRequestProxy
     match proxyRequest.Request.HttpContext.Connection.RemoteIpAddress with
     | null -> "unknown_ip"
     | addr ->
         let ip = addr.ToString()
-        printfn "IP: %s" ip
         ip
 
 // Helper function to create rules for the slug API

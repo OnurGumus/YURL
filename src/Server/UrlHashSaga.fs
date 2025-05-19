@@ -6,6 +6,7 @@ open Common.SagaStarter
 open Akkling
 open Model
 open GenerateSlug
+open FCQRS.Model.Data
 
 
 type State =
@@ -14,6 +15,7 @@ type State =
     | GeneratingSlug of Url
     | SuffixingSlug of Slug
     | ConfirmingSlug of Slug
+    | RejectingSlug of ShortString
     | Completed
 
 type SagaData = NA
@@ -27,7 +29,8 @@ let apply (sagaState: SagaState<SagaData, State>) = sagaState
 
 let handleEvent (event: obj) (state: SagaState<SagaData, State>) = //: EventAction<State>  =
     match event, state with
-    | :? SlugGenerated as SlugGenerated slug, _ -> SuffixingSlug slug |> StateChangedEvent
+    | :? SlugGeneration as SlugGenerated slug, _ -> SuffixingSlug slug |> StateChangedEvent
+    | :? SlugGeneration as SlugGenerationFailed reason, _ -> RejectingSlug reason |> StateChangedEvent
     | :? (Common.Event<UrlHash.Event>) as { EventDetails = userEvent }, state ->
         match userEvent, state with
         | UrlHash.UrlProcessingStarted url, _ -> GeneratingSlug url |> StateChangedEvent
@@ -104,13 +107,23 @@ let applySideEffects
             }
         ]
 
-    | ConfirmingSlug slug ->
+    | ConfirmingSlug _ ->
         NoEffect,
         None,
         [
             {
                 TargetActor = originator
                 Command = UrlHash.Confirm 
+                DelayInMs = None
+            }
+        ]
+    | RejectingSlug reason ->
+        NoEffect,
+        None,
+        [
+            {
+                TargetActor = originator
+                Command = UrlHash.Reject reason
                 DelayInMs = None
             }
         ]

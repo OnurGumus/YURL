@@ -1,10 +1,12 @@
 module UrlHash
 
 open FCQRS.Common
+open FCQRS.Model.Data
 open Model
 
 type Event =
     | ProcessCompleted
+    | UrlProcessingFailed of ShortString
     | UrlProcessingStarted of Url
     | AlreadyProcessing
     | AlreadyProcessed
@@ -12,6 +14,7 @@ type Event =
 type Command =
     | ProcessUrl of Url
     | Confirm
+    | Reject of ShortString
 
 type ProcessState =
     | NotStarted
@@ -33,6 +36,8 @@ let handleCommand (cmd: Command<_>) state =
     | ProcessUrl _,  Processing -> AlreadyProcessing |> DeferEvent
     | ProcessUrl _, Completed -> AlreadyProcessed |> DeferEvent
     | Confirm, _ -> AlreadyProcessed |> DeferEvent
+    | Reject reason, Processing -> UrlProcessingFailed reason |> PersistEvent
+    | Reject _, _ -> AlreadyProcessed |> DeferEvent
 
 let init (env: _) (actorApi: IActor) =
     let initialState = { ProcessState = NotStarted }
