@@ -4,7 +4,7 @@ framework: net9.0
 storage: none
 
 nuget FSharp.Core
-nuget Giraffe 7.0.2
+nuget Giraffe
 nuget Hocon.Extensions.Configuration
 nuget Microsoft.Extensions.Logging.Console
 nuget Microsoft.Extensions.Hosting
@@ -13,10 +13,10 @@ nuget Microsoft.Extensions.Logging
 nuget System.Text.Json
 nuget Microsoft.Extensions.Http
 nuget Destructurama.FSharp
-nuget Fue 2.2
+nuget Fue
 nuget Expecto
-nuget ThrottlingTroll 7.3.0
-nuget YoloDev.Expecto.TestSdk 0.15.3
+nuget ThrottlingTroll
+nuget YoloDev.Expecto.TestSdk prerelease
 nuget Microsoft.NET.Test.Sdk
 nuget Expecto.FsCheck
 nuget AltCover

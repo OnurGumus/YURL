@@ -39,10 +39,12 @@ let slugHandler: HttpHandler =
             let cqrsService = ctx.GetService<Bootstrap.CQRSService>()
             let url = url.Url |>ValueLens.TryCreate |> Result.value
             let cid = cid()
-            let s = cqrsService.Sub.Subscribe((fun e -> e.CID = cid), 1) |> Async.StartAsTask
+            use s = cqrsService.Sub.Subscribe((fun e -> e.CID = cid), 1) 
             let! slug = cqrsService.GenerateSlug cid url
-            use! result = s
+            s.Task.Wait()
+            
             let logger = ctx.GetLogger "SlugHandler"
+            logger.LogInformation("Slug generated: {Slug}", slug)
             logger.LogInformation("Received URL: {Url}", url)
 
             let guid = Guid.NewGuid().ToString()
