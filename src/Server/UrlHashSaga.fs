@@ -34,7 +34,7 @@ let handleEvent (event: obj) (state: SagaState<SagaData, State>) = //: EventActi
     | :? (Common.Event<UrlHash.Event>) as { EventDetails = userEvent }, state ->
         match userEvent, state with
         | UrlHash.UrlProcessingStarted url, _ -> GeneratingSlug url |> StateChangedEvent
-        | UrlHash.ProcessCompleted, _ -> Completed |> StateChangedEvent
+        | UrlHash.ProcessCompleted _, _ -> Completed |> StateChangedEvent
         | UrlHash.AlreadyProcessing, _ ->  Completed|> StateChangedEvent
         | _ -> UnhandledEvent
 
@@ -107,13 +107,13 @@ let applySideEffects
             }
         ]
 
-    | ConfirmingSlug _ ->
+    | ConfirmingSlug slug ->
         NoEffect,
         None,
         [
             {
                 TargetActor = originator
-                Command = UrlHash.Confirm 
+                Command = UrlHash.Confirm slug
                 DelayInMs = None
             }
         ]

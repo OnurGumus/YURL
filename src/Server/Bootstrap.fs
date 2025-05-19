@@ -39,7 +39,8 @@ type CQRSService(env: Environments.AppEnv) =
 
         async {
             match! subscribe with
-            | { EventDetails = UrlHash.ProcessCompleted ;  Version = v  }-> return Ok v
+            | { EventDetails = UrlHash.ProcessCompleted _ ;  Version = v  }-> return Ok v
+            | { EventDetails = UrlHash.UrlProcessingFailed (ResultValue reason)} -> return Error [ sprintf "Url %s processing failed: %s" urlString reason ]
             | { EventDetails = UrlHash.AlreadyProcessing  }-> return Error [ sprintf "Url %s is already processing" <| urlString ]
             | { EventDetails = UrlHash.AlreadyProcessed  }-> return Error [ sprintf "Url %s is already processed" <| urlString ]
 
@@ -52,9 +53,9 @@ type CQRSService(env: Environments.AppEnv) =
     member _.UrlHashSubs cid =
         actorApi.CreateCommandSubscription urlHashShard cid
 
-
     override _.ExecuteAsync(_stoppingToken: CancellationToken) =
         task {
+            Migrations.init env
 
             let sagaCheck (o: obj) =
                 match o with
@@ -71,7 +72,6 @@ type CQRSService(env: Environments.AppEnv) =
             SuffixSlug.init env actorApi |> ignore
             UrlHashSaga.init env actorApi |> ignore
             
-            
-            sub <- FCQRS.Query.init actorApi 0 (Query.handleEventWrapper env)
+            sub <- Query.init env actorApi
 
         }

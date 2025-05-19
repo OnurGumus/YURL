@@ -14,3 +14,5 @@ FCQRS
 FCQRS.Model
 FCQRS.Serialization
 FCQRS.SqlProvider
+FluentMigrator.Runner.SQLite
+Microsoft.Data.Sqlite
