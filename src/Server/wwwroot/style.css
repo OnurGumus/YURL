@@ -211,7 +211,38 @@
         transform-origin: center;
         opacity: 0;
         animation: crtPowerOn var(--time-animation) var(--ease-bounce) 0.2s forwards;
-        contain: layout paint;
+        contain: layout;
+
+        &::before,
+        &::after {
+            content: '';
+            position: absolute;
+            inline-size: var(--corner-accent-size);
+            block-size: var(--corner-accent-size);
+            border-color: var(--accent-primary);
+            border-style: solid;
+            transition: border-color var(--time-slow) var(--ease-standard);
+        }
+
+        &::before {
+            inset-block-start: -1px;
+            inset-inline-start: -1px;
+            border-block-start-width: 2px;
+            border-inline-start-width: 2px;
+            border-block-end-width: 0;
+            border-inline-end-width: 0;
+            border-start-start-radius: 0.625rem; /* 10px */
+        }
+
+        &::after {
+            inset-block-end: -1px;
+            inset-inline-end: -1px;
+            border-block-start-width: 0;
+            border-inline-start-width: 0;
+            border-block-end-width: 2px;
+            border-inline-end-width: 2px;
+            border-end-end-radius: 0.625rem; /* 10px */
+        }
     }
 
     .title-group {
