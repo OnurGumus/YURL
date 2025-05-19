@@ -48,4 +48,3 @@ let init env  (actorApi: IActor) =
     
         let offsetCount =  ctx.Main.Offsets.Individuals.Shorten.OffsetCount
         FCQRS.Query.init actorApi offsetCount (handleEventWrapper env ctx) 
-       

@@ -8,12 +8,12 @@ open FSharp.Data.Sql.Common
 let resolutionPath = __SOURCE_DIRECTORY__ + @"/libs"
 
 [<Literal>]
-let schemaLocation = __SOURCE_DIRECTORY__ + @"/../Web/Database/Schema.sqlite"
+let schemaLocation = __SOURCE_DIRECTORY__ + @"/Database/Schema.sqlite"
 #if DEBUG
 
 [<Literal>]
 let connectionString =
-      @"Data Source=" + __SOURCE_DIRECTORY__ + @"/Shorten.db;"
+      @"Data Source=" + __SOURCE_DIRECTORY__ + @"/Database/Shorten.db;"
 
 #else
 
@@ -29,6 +29,6 @@ type Sql =
         SQLiteLibrary=SQLiteLibrary.MicrosoftDataSqlite,
         ConnectionString=connectionString,
         ResolutionPath= resolutionPath,
-     //   ContextSchemaPath=schemaLocation,
+        ContextSchemaPath=schemaLocation,
         CaseSensitivityChange=CaseSensitivityChange.ORIGINAL
      >

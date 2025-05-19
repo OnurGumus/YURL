@@ -3,4 +3,5 @@ obj/
 *.cached
 *.db
 .DS_Store
-shorten.db-shm
+*.db-shm
+*.db-wal
