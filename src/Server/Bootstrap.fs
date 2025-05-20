@@ -23,6 +23,7 @@ type CQRSService(env: Environments.AppEnv) =
     let urlHashSaga = UrlHashSaga.factory env actorApi
 
     let mutable sub:ISubscribe<_>= Unchecked.defaultof<_>
+    let mutable queryApi = Unchecked.defaultof<_>
 
 
     member this.GenerateSlug cid (url:Model.Url) =
@@ -50,6 +51,11 @@ type CQRSService(env: Environments.AppEnv) =
 
     member _.Sub = sub
 
+    member _.Query<'t>(?filter, ?orderby, ?orderbydesc, ?thenby, ?thenbydesc, ?take, ?skip, ?cacheKey) = async{
+        let! res = queryApi (typeof<'t>, filter, orderby, orderbydesc, thenby, thenbydesc, take, skip, cacheKey)
+        return res |> Seq.cast<'t> |> List.ofSeq
+    }
+
     member _.UrlHashSubs cid =
         actorApi.CreateCommandSubscription urlHashShard cid
 
@@ -73,5 +79,5 @@ type CQRSService(env: Environments.AppEnv) =
             UrlHashSaga.init env actorApi |> ignore
             
             sub <- Query.init env actorApi
-
+            queryApi <- Query.queryApi env
         }

@@ -6,3 +6,4 @@ AltCover
 TickSpec
 Microsoft.AspNetCore.TestHost
 Giraffe
+SQLProvider

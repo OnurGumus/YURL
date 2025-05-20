@@ -15,6 +15,7 @@ open System
 open ThrottlingTroll
 open Hocon.Extensions.Configuration
 open FCQRS.Model.Data
+open FsToolkit.ErrorHandling
 
 #if DEBUG
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
@@ -40,6 +41,7 @@ let slugHandler: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
             let! url = ctx.BindModelAsync<UrlRequest>()
+            let originalUrl  = url.Url
             let cqrsService = ctx.GetService<Bootstrap.CQRSService>()
             let url = url.Url |>ValueLens.TryCreate |> Result.value
             let cid = cid()
@@ -49,17 +51,28 @@ let slugHandler: HttpHandler =
                 s.Task.Wait()
             
             let logger = ctx.GetLogger "SlugHandler"
-            logger.LogInformation("Slug generated: {Slug}", slug)
             logger.LogInformation("Received URL: {Url}", url)
+            let! res =  
+                cqrsService.Query<Query.Url>(filter = Predicate.Equal("OriginalUrl", originalUrl), take = 1) 
+                |> Async.map  Seq.head
 
-            let guid = Guid.NewGuid().ToString()
-            return! json guid next ctx
+            return! json res.Slug next ctx
         }
-
+let redirectHandler slug: HttpHandler =
+    fun (next: HttpFunc) (ctx: HttpContext) ->
+        task {
+            let cqrsService = ctx.GetService<Bootstrap.CQRSService>()
+            match! cqrsService.Query<Query.Url>(filter = Predicate.Equal("Slug", slug), take = 1) with
+            | [] -> return! setStatusCode 404 next ctx
+            | [url] -> return! redirectTo false url.OriginalUrl next ctx
+            | _ -> return! setStatusCode 500 next ctx
+        }
+        
 let webApp () : HttpHandler =
     choose [
         GET >=> route "/" >=> indexPageHandler
         POST >=> route "/api/slug" >=> slugHandler
+        GET >=> routef "/%s" redirectHandler
     ]
 
 let configureServices (services: IServiceCollection) =

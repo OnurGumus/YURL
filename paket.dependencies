@@ -28,3 +28,4 @@ nuget FCQRS.Serialization
 nuget FCQRS.SqlProvider
 nuget FluentMigrator.Runner.SQLite
 nuget Microsoft.Data.Sqlite
+nuget SqlProvider

@@ -109,5 +109,7 @@ let ``the system should create the slug (.*)`` (expectedSlug: string) (context: 
 [<Then>]
 let ``navigating to (.*) should redirect to (.*)`` (slug: string) (url: string) (context: TestContext) =
     // This is just a stub for now - we haven't implemented redirection functionality yet
-    printfn "Redirection test is not implemented yet"
-    context
+   ( task {
+        let! response = context.HttpClient.GetAsync(sprintf "http://localhost/%s" context.GeneratedSlug.Value)
+        Expect.equal response.StatusCode System.Net.HttpStatusCode.Redirect "Should redirect to the original URL"
+    }).Wait()
