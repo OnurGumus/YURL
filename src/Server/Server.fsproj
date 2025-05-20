@@ -21,6 +21,9 @@
     <Content Include="templates/**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="config.hocon">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="wwwroot/**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
