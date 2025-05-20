@@ -23,8 +23,16 @@ Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 
 [<CLIMutable>]
 type UrlRequest = { Url: string }
+
+let ensureUrlHasProtocol (url: string) =
+    if url.StartsWith("http://") || url.StartsWith("https://") then
+        url
+    else
+        "https://" + url
+
 let cid (): CID =
     System.Guid.NewGuid().ToString() |> ValueLens.CreateAsResult |> Result.value
+
 let builder = WebApplication.CreateBuilder()
 
 let indexPageHandler: HttpHandler =
@@ -41,9 +49,9 @@ let slugHandler: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
             let! url = ctx.BindModelAsync<UrlRequest>()
-            let originalUrl  = url.Url
+            let originalUrl = ensureUrlHasProtocol url.Url
             let cqrsService = ctx.GetService<Bootstrap.CQRSService>()
-            let url = url.Url |>ValueLens.TryCreate |> Result.value
+            let url = originalUrl |> ValueLens.TryCreate |> Result.value
             let cid = cid()
             use s = cqrsService.Sub.Subscribe((fun e -> e.CID = cid), 1) 
             let! slug = cqrsService.GenerateSlug cid url
@@ -58,13 +66,16 @@ let slugHandler: HttpHandler =
 
             return! json res.Slug next ctx
         }
+
 let redirectHandler slug: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
             let cqrsService = ctx.GetService<Bootstrap.CQRSService>()
             match! cqrsService.Query<Query.Url>(filter = Predicate.Equal("Slug", slug), take = 1) with
             | [] -> return! setStatusCode 404 next ctx
-            | [url] -> return! redirectTo false url.OriginalUrl next ctx
+            | [url] -> 
+                let redirectUrl = ensureUrlHasProtocol url.OriginalUrl
+                return! redirectTo false redirectUrl next ctx
             | _ -> return! setStatusCode 500 next ctx
         }
         
