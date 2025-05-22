@@ -4,8 +4,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- UPDATED TITLE -->
-    <title>yurl.ai - Intelligent URL Condenser</title>
+
+    <title>yurl.ai: AI URL Shortener & Intelligent Condenser</title>
+    <meta name="description" content="Shorten and condense URLs with yurl.ai, your intelligent AI-powered tool. Generate smart, descriptive, and SEO-friendly short links instantly.">
+    <meta name="keywords" content="ai url shortener, intelligent url condenser, yurl.ai, custom slugs, link shortener, seo url, vector url">
+    <meta name="author" content="Onur Gumus">
+
+    <link rel="canonical" href="https://yurl.ai/">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+
+    <!-- JSON-LD Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "yurl.ai: AI URL Shortener & Intelligent Condenser",
+      "alternateName": "yurl.ai",
+      "description": "An intelligent URL condenser that uses AI to generate short, descriptive, and SEO-friendly slugs for long URLs.",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web-based",
+      "url": "https://yurl.ai/",
+      "keywords": "url shortener, link shortener, ai url, intelligent url, condense url, custom slug, seo friendly url, yurl, vector slug, ai powered",
+      "image": "https://yurl.ai/assets/logo.png",
+      "author": {
+        "@type": "Person",
+        "name": "Onur Gumus",
+        "url": "https://onur.works"
+      },
+      "provider": {
+        "@type": "Organization",
+        "name": "yurl.ai",
+        "url": "https://yurl.ai/",
+        "logo": "https://yurl.ai/assets/logo.png"
+      },
+      "potentialAction": {
+        "@type": "Action",
+        "name": "Condense URL",
+        "description": "Submit a long URL to generate a condensed, intelligent yurl.",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://yurl.ai/",
+          "actionPlatform": [
+            "http://schema.org/DesktopWebPlatform",
+            "http://schema.org/MobileWebPlatform"
+          ]
+        }
+      }
+    }
+    </script>
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="yurl.ai: AI URL Shortener & Intelligent Condenser">
+    <meta property="og:description" content="Shorten and condense URLs with yurl.ai, your intelligent AI-powered tool. Generate smart, descriptive, and SEO-friendly short links instantly.">
+    <meta property="og:image" content="https://yurl.ai/assets/logo.png">
+    <meta property="og:url" content="https://yurl.ai/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="yurl.ai">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="yurl.ai: AI URL Shortener & Intelligent Condenser">
+    <meta name="twitter:description" content="Shorten and condense URLs with yurl.ai, your intelligent AI-powered tool. Generate smart, descriptive, and SEO-friendly short links instantly.">
+    <meta name="twitter:image" content="https://yurl.ai/assets/logo.png">
+    <meta name="twitter:site" content="@OnurGumusDev"> 
+    <meta name="twitter:creator" content="@OnurGumusDev"> 
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -14,16 +77,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400;1,500&family=Inter:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700;1,800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
-    <link rel="icon" type="image/png" href="/assets/logo.png">
-    <meta name="description" content="yurl.ai - Intelligent URL Condenser">
-    <meta name="keywords" content="yurl, ai, url, condenser, intelligent, vector">
-    <meta name="author" content="yurl.ai Team">
-    <meta property="og:title" content="yurl.ai - Intelligent URL Condenser">
-    <meta property="og:description" content="yurl.ai - Intelligent URL Condenser">
-    <meta property="og:image" content="/logo.png">
-    <meta property="og:url" content="https://yurl.ai/">
-    <script src="/script.js" defer></script>
+    <link rel="stylesheet" href="/style.css?v=202505221837">
+    <script src="/script.js/style.css?v=202505221837" defer></script>
 </head>
 
 <body>
@@ -38,39 +93,44 @@
         </svg>
     </button>
 
-    <div class="container">
-        <div class="title-group">
-            <!-- UPDATED TITLE -->
-            <h1 class="title">yurl<span class="highlight">.ai</span></h1>
-            <!-- UPDATED SUBTITLE -->
-            <p class="subtitle">intelligent url condensation</p>
-        </div>
-
-        <form class="shortener-form" id="shortenerForm">
-            <div class="input-group">
-                <!-- UPDATED PLACEHOLDER -->
-                <input type="text" id="urlInput" class="url-input" placeholder="> paste_long_url_for_ai_analysis..."
-                    required>
-          
+    <div class="main-content-area">
+        <div class="container">
+            <div class="title-group">
+                <h1 class="title">yurl<span class="highlight">.ai</span></h1>
+                <p class="subtitle">intelligent url condensation</p>
             </div>
-            <!-- UPDATED BUTTON TEXT -->
-            <button type="submit" class="shrink-button">
-                <span class="button-text">Generate yurl</span>
-                <span class="button-loader"></span>
-            </button>
-        </form>
 
-        <div class="result-area" id="resultArea">
-            <!-- UPDATED RESULT TEXT -->
-            <p>AI Optimized Vector</p>
-            <div class="shortened-url-container">
-                <span id="shortenedUrlDisplay" class="shortened-url-display"></span>
-                <button class="copy-button" id="copyButton" disabled>Copy Vector</button>
+            <form class="shortener-form" id="shortenerForm">
+                <div class="input-group">
+                    <input type="text" id="urlInput" class="url-input" placeholder="> paste_long_url_for_ai_analysis..."
+                        required>
+              
+                </div>
+                <button type="submit" class="shrink-button">
+                    <span class="button-text">Generate yurl</span>
+                    <span class="button-loader"></span>
+                </button>
+            </form>
+
+            <div class="result-area" id="resultArea">
+                <p>AI Optimized Vector</p>
+                <div class="shortened-url-container">
+                    <span id="shortenedUrlDisplay" class="shortened-url-display"></span>
+                    <button class="copy-button" id="copyButton" disabled>Copy Vector</button>
+                </div>
+                <span class="copy-feedback" id="copyFeedback"></span>
             </div>
-            <span class="copy-feedback" id="copyFeedback"></span>
         </div>
     </div>
 
+    <footer class="site-footer">
+        <p>
+            Made by <a href="https://onur.works" target="_blank" rel="noopener noreferrer">onur.works</a> | 
+            <a href="https://github.com/OnurGumus/YURL" target="_blank" rel="noopener noreferrer" id="githubLink">View on GitHub</a>
+        </p>
+    </footer>
+
+    <script src="/script.js?v=202505221837" defer></script>
 </body>
 
 </html>

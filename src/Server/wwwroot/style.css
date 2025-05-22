@@ -140,7 +140,6 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
         min-block-size: 100vh;
         padding-block: 1.25rem; /* 20px */
         padding-inline: 1.25rem; /* 20px */
@@ -276,6 +275,42 @@
             block-size: 1.25rem; /* 20px */
             fill: currentColor;
         }
+    }
+
+    .site-footer {
+        text-align: center;
+        padding-block-start: 2rem; /* Add some space above the footer */
+        padding-block-end: 1.5rem; /* Space below */
+        font-size: var(--fs-small);
+        color: var(--text-secondary);
+        opacity: 0; /* For fade-in animation */
+        animation: fadeInContent var(--time-slower) var(--ease-out) 1.8s forwards; /* Adjust delay if needed */
+        width: 100%; /* Ensure it takes full width */
+    }
+
+    .site-footer p {
+        margin: 0;
+    }
+
+    .site-footer a {
+        color: var(--accent-primary); /* Use your existing accent color */
+        text-decoration: none;
+        transition: color var(--time-fast) var(--ease-standard), text-decoration var(--time-fast) var(--ease-standard);
+    }
+
+    .site-footer a:hover,
+    .site-footer a:focus {
+        color: var(--accent-secondary); /* Or a slightly different shade on hover */
+        text-decoration: underline;
+    }
+
+    .main-content-area {
+        flex-grow: 1; /* Make this area take available vertical space */
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Center the .container within it */
+        align-items: center; /* Ensure horizontal centering is maintained */
+        width: 100%; /* Take full width */
     }
 }
 
