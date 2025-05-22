@@ -31,7 +31,7 @@ let ensureUrlHasProtocol (url: string) =
         "https://" + url
 
 let cid (): CID =
-    System.Guid.NewGuid().ToString() |> ValueLens.CreateAsResult |> Result.value
+    Guid.CreateVersion7().ToString() |> ValueLens.CreateAsResult |> Result.value
 
 let builder = WebApplication.CreateBuilder()
 
@@ -151,9 +151,9 @@ let configureApp (app: WebApplication) : WebApplication =
             let config = ThrottlingTrollConfig()
 
             config.Rules <- [|
-                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 50, IntervalInSeconds = 60));
-                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 100, IntervalInSeconds = 3600));
-                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 200, IntervalInSeconds = 86400));
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 5, IntervalInSeconds = 60));
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 10, IntervalInSeconds = 3600));
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 20, IntervalInSeconds = 86400));
             |]
             
             opts.Config <- config
