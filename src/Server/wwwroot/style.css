@@ -430,6 +430,39 @@
         overflow: hidden;
         contain: layout paint;
 
+        .button-text {
+            transition: opacity var(--time-fast) var(--ease-standard);
+        }
+
+        .button-loader {
+            display: none;
+            inline-size: 1.25rem; /* 20px */
+            block-size: 1.25rem; /* 20px */
+            border: 3px solid oklch(100% 0 0 / 0.2);
+            border-top-color: var(--button-text-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            inset-block-start: 50%;
+            inset-inline-start: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        &.loading .button-text {
+            opacity: 0;
+        }
+
+        &.loading .button-loader {
+            display: block;
+        }
+
+        &.loading {
+            pointer-events: none; /* Disable clicks and hover effects */
+            /* Override hover/active styles */
+            transform: none !important; 
+            box-shadow: 0 0 0.9375rem var(--accent-glow) !important; /* Reset to base shadow or specific loading shadow */
+        }
+
         &::before {
             content: '';
             position: absolute;
@@ -642,6 +675,12 @@
 
         50% {
             opacity: 0;
+        }
+    }
+
+    @keyframes spin {
+        to {
+            transform: translate(-50%, -50%) rotate(360deg);
         }
     }
 }

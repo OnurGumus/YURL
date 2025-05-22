@@ -6,6 +6,9 @@ const copyButton = document.getElementById('copyButton');
 const copyFeedback = document.getElementById('copyFeedback');
 const themeToggleButton = document.getElementById('themeToggle');
 const bodyElement = document.body;
+const shrinkButton = document.querySelector('.shrink-button');
+const buttonText = shrinkButton.querySelector('.button-text');
+const buttonLoader = shrinkButton.querySelector('.button-loader');
 let currentTypingTimeout = null;
 
 function isValidUrlFormat(url) {
@@ -58,6 +61,10 @@ shortenerForm.addEventListener('submit', async function (event) {
         currentTypingTimeout = null;
     }
 
+    // Disable button and show loader
+    shrinkButton.disabled = true;
+    shrinkButton.classList.add('loading');
+
     let slug = '';
     try {
         const requestBody = { url: longUrl };
@@ -78,8 +85,15 @@ shortenerForm.addEventListener('submit', async function (event) {
     } catch (error) {
         console.error('Failed to fetch slug:', error);
         alert('Failed to generate a short link. Please try again.');
+        // Enable button and hide loader even if there's an error
+        shrinkButton.disabled = false;
+        shrinkButton.classList.remove('loading');
         return;
     }
+
+    // Enable button and hide loader
+    shrinkButton.disabled = false;
+    shrinkButton.classList.remove('loading');
 
     // UPDATED SHORT URL DOMAIN
     const fullShortenedUrl = `yurl.ai/${slug}`;
