@@ -14,6 +14,8 @@ open OpenAI.Chat
 open Microsoft.SemanticKernel.ChatCompletion
 open System.Collections.Generic
 open FSharp.Control
+open System.Text.RegularExpressions
+open Microsoft.Extensions.Logging
 // open Microsoft.SemanticKernel.Agents.OpenAI
 let client = OpenAIAssistantAgent.CreateOpenAIClient()
 
@@ -48,9 +50,52 @@ let private getHtmlContent (url: string) =
     async {
         try
             use client = new HttpClient()
-            let! response = url |> client.GetAsync |> Async.AwaitTask
-            let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
-            return content.Substring(0, min 1000 content.Length)
+            client.Timeout <- TimeSpan.FromSeconds(10.0)
+
+            let! response = client.GetAsync(url) |> Async.AwaitTask
+            response.EnsureSuccessStatusCode() |> ignore
+
+            let! fullHtmlContent = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+
+            let initialProcessingLength = 4096
+            let additionalProcessingLength = 3000
+            let maxOutputLength = 2000
+
+            let titleRegex = Regex("<title>([^<]+)</title>", RegexOptions.IgnoreCase)
+            let metaRegex = Regex("""<meta(?=[^>]*name\s*=\s*['"](description|keywords)['"])(?=[^>]*content\s*=\s*['"]([^'"]*)['"])[^>]*>""", RegexOptions.IgnoreCase ||| RegexOptions.Singleline)
+
+            let extractTags (htmlChunk: string) =
+                let titleMatch = titleRegex.Match(htmlChunk)
+                let title = if titleMatch.Success then titleMatch.Groups.[1].Value.Trim() else ""
+
+                let metaMatches = metaRegex.Matches(htmlChunk)
+                let metaContent =
+                    metaMatches
+                    |> Seq.cast<Match>
+                    |> Seq.map (fun m -> m.Groups.[2].Value.Trim())
+                    |> Seq.filter (fun s -> not (String.IsNullOrWhiteSpace s))
+                    |> String.concat " "
+
+                (title + " " + metaContent).Trim()
+
+            let getLimitedSubstring (text: string) (maxLength: int) =
+                if String.IsNullOrWhiteSpace(text) then ""
+                else
+                    let effectiveLength = min maxLength text.Length
+                    text.Substring(0, effectiveLength)
+
+            let initialHtmlChunk = getLimitedSubstring fullHtmlContent initialProcessingLength
+            let mutable extractedContent = extractTags initialHtmlChunk
+
+            if String.IsNullOrWhiteSpace(extractedContent) && fullHtmlContent.Length > initialProcessingLength then
+                let extendedProcessingLength = initialProcessingLength + additionalProcessingLength
+                let extendedHtmlChunk = getLimitedSubstring fullHtmlContent extendedProcessingLength
+                extractedContent <- extractTags extendedHtmlChunk
+
+            if String.IsNullOrWhiteSpace(extractedContent) then
+                return getLimitedSubstring initialHtmlChunk maxOutputLength
+            else
+                return getLimitedSubstring extractedContent maxOutputLength
         with
         | _ -> return url
     }
@@ -58,10 +103,22 @@ let private getHtmlContent (url: string) =
 let private prepareForOpenAI (url: string) =
     async {
         let! isHtml = checkContentType url
+        let urlPrefix = url.Substring(0, min 50 url.Length) // Get first 50 chars of URL
+
         if isHtml then
-            // If it's HTML, download first 200 bytes
-            return! getHtmlContent url
+            let! htmlBasedContent = getHtmlContent url
+            // Prepend URL prefix to the HTML-based content
+            let combinedContent = urlPrefix + " " + htmlBasedContent
+            // Ensure the combined content does not exceed a reasonable length for OpenAI
+            let maxOpenAiInputLength = 1000 // Reduced to 1000
+            if combinedContent.Length > maxOpenAiInputLength then
+                return combinedContent.Substring(0, maxOpenAiInputLength)
+            else
+                return combinedContent
         else
+            // If not HTML, return the original URL (OpenAI will likely use the full URL)
+            // Or, if we want to be consistent, just the prefix or the full URL capped.
+            // For now, returning the full URL as before for non-HTML.
             return url
     }
 
@@ -77,6 +134,10 @@ let generateHash (input: string) =
 
 let behavior env (m: Actor<_>) =
     let config = (env :> FCQRS.Common.IConfigurationWrapper).Configuration
+    let log = 
+        (env :> FCQRS.Common.ILoggerFactoryWrapper)
+            .LoggerFactory.CreateLogger("SlugGeneration")
+
     let assistantId = 
         match config.["config:assistant-id"] with
         | null -> Environment.GetEnvironmentVariable("ASSISTANT_ID")
@@ -97,6 +158,8 @@ let behavior env (m: Actor<_>) =
                     m.Sender().Tell(SlugGenerated slug, Akka.Actor.ActorRefs.NoSender)
                 else
                     // OpenAI based approach
+                    let sw = System.Diagnostics.Stopwatch.StartNew()
+
                     let contentForOpenAI = (prepareForOpenAI url) |> Async.RunSynchronously
                     let client = 
                         openAiKey
@@ -107,13 +170,14 @@ let behavior env (m: Actor<_>) =
                     let assistant = 
                         client.GetAssistant assistantId
                     let agent = OpenAIAssistantAgent(assistant, client)
+                    log.LogInformation("Content for OpenAI: {content}, time: {time}", contentForOpenAI, sw.Elapsed)
                     let z =
                         taskSeq{
                             for response in agent.InvokeAsync(Microsoft.SemanticKernel.ChatMessageContent(AuthorRole.User,contentForOpenAI))  do
                                  yield response.Message.Content
                         }
                     let finalSlug = (z  |> TaskSeq.head).Result
-                    
+                    log.LogInformation("Final slug: {slug}, time: {time}", finalSlug, sw.Elapsed)
                     let slug:Slug =finalSlug  |> ValueLens.CreateAsResult |> Result.value
                     m.Sender().Tell(SlugGenerated slug, Akka.Actor.ActorRefs.NoSender)
                 
