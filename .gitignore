@@ -5,3 +5,4 @@ obj/
 .DS_Store
 *.db-shm
 *.db-wal
+secret.hocon

@@ -135,7 +135,7 @@ let init (env: _) (actorApi: IActor) =
     let suffixSlugFactory = SuffixSlug.factory env actorApi
 
     let slugGenerator =
-        fun () -> spawnAnonymous actorApi.System (props GenerateSlug.behavior) |> retype
+        fun () -> spawnAnonymous actorApi.System (props (GenerateSlug.behavior env)) |> retype
 
     actorApi.InitializeSaga
         env
