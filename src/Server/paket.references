@@ -17,3 +17,5 @@ FCQRS.SqlProvider
 FluentMigrator.Runner.SQLite
 Microsoft.Data.Sqlite
 SQLProvider
+Microsoft.SemanticKernel.Agents.OpenAI
+FSharp.Control.TaskSeq

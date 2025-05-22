@@ -29,3 +29,5 @@ nuget FCQRS.SqlProvider
 nuget FluentMigrator.Runner.SQLite
 nuget Microsoft.Data.Sqlite
 nuget SqlProvider
+nuget Microsoft.SemanticKernel.Agents.OpenAI prerelease
+nuget FSharp.Control.TaskSeq
