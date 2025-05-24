@@ -96,7 +96,7 @@ shortenerForm.addEventListener('submit', async function (event) {
     shrinkButton.classList.remove('loading');
 
     // UPDATED SHORT URL DOMAIN
-    const fullShortenedUrl = `yurl.ai/${slug}`;
+    const fullShortenedUrl = `${window.location.host}/${slug}`;
 
     shortenedUrlDisplay.textContent = '';
     shortenedUrlDisplay.classList.remove('typing');
