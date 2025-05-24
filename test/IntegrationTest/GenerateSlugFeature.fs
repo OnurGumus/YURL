@@ -42,6 +42,7 @@ let ``the page at (.*) returns HTML with title (.*)`` (url: string) (title: stri
                     "config:akka:persistence:journal:sql:connection-string",  connectionString
                     "config:akka:persistence:query:journal:sql:connection-string", connectionString
                     "config:akka:persistence:snapshot-store:sql:connection-string", connectionString
+                    "config:OPENAI_API_KEY", ""
                     ] |> Map.ofList)
                 |> ignore)
             .ConfigureServices Program.configureServices
@@ -91,16 +92,7 @@ let ``the system should create the slug (.*)`` (expectedSlug: string) (context: 
     match context.GeneratedSlug with
     | None -> failwith "No slug was generated"
     | Some slug ->
-        // If expectedSlug is "*", we just verify that we got a GUID (not checking specific value)
-        if expectedSlug = "*" then
-            // Verify the slug is a valid GUID format
-            let isGuid =
-                match System.Guid.TryParse(slug) with
-                | true, _ -> true
-                | false, _ -> false
-
-            Expect.isTrue isGuid "The generated slug should be a valid GUID"
-        else
+       
             // Otherwise check for the specific slug
             Expect.equal slug expectedSlug "The generated slug should match the expected slug"
 

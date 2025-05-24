@@ -119,7 +119,7 @@ let configureAppConfiguration (ctx: WebHostBuilderContext) (config: IConfigurati
     config
         .SetBasePath(ctx.HostingEnvironment.ContentRootPath)
         .AddHoconFile("config.hocon")
-        .AddHoconFile("secret.hocon")
+        .AddHoconFile("secret.hocon", optional = true)
         .AddEnvironmentVariables()
     |> ignore
 
