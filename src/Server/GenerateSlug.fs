@@ -137,7 +137,11 @@ let behavior env (m: Actor<_>) =
     let log = 
         (env :> FCQRS.Common.ILoggerFactoryWrapper)
             .LoggerFactory.CreateLogger("SlugGeneration")
-
+    // Asisstant Prompt:
+    //Analyze the input text. Identify two primary keywords or the most salient short words.
+    //Combine these into a lowercase URL slug, `keyword1_keyword2`.
+    // The slug must be under 15 characters total.
+    //Return only the slug.
     let assistantId = 
         match config.["config:assistant-id"] with
         | null -> Environment.GetEnvironmentVariable("ASSISTANT_ID")
