@@ -157,29 +157,34 @@ let behavior env (m: Actor<_>) =
                     let slug:Slug = generateHash url |> ValueLens.CreateAsResult |> Result.value
                     m.Sender().Tell(SlugGenerated slug, Akka.Actor.ActorRefs.NoSender)
                 else
+                    try
                     // OpenAI based approach
-                    let sw = System.Diagnostics.Stopwatch.StartNew()
+                        let sw = System.Diagnostics.Stopwatch.StartNew()
 
-                    let contentForOpenAI = (prepareForOpenAI url) |> Async.RunSynchronously
-                    let client = 
-                        openAiKey
-                        |> nonNull
-                        |>ApiKeyCredential
-                        |>OpenAIAssistantAgent.CreateOpenAIClient
-                        |> _.GetAssistantClient()
-                    let assistant = 
-                        client.GetAssistant assistantId
-                    let agent = OpenAIAssistantAgent(assistant, client)
-                    log.LogInformation("Content for OpenAI: {content}, time: {time}", contentForOpenAI, sw.Elapsed)
-                    let z =
-                        taskSeq{
-                            for response in agent.InvokeAsync(Microsoft.SemanticKernel.ChatMessageContent(AuthorRole.User,contentForOpenAI))  do
-                                 yield response.Message.Content
-                        }
-                    let finalSlug = (z  |> TaskSeq.head).Result
-                    log.LogInformation("Final slug: {slug}, time: {time}", finalSlug, sw.Elapsed)
-                    let slug:Slug =finalSlug  |> ValueLens.CreateAsResult |> Result.value
-                    m.Sender().Tell(SlugGenerated slug, Akka.Actor.ActorRefs.NoSender)
+                        let contentForOpenAI = (prepareForOpenAI url) |> Async.RunSynchronously
+                        let client = 
+                            openAiKey
+                            |> nonNull
+                            |>ApiKeyCredential
+                            |>OpenAIAssistantAgent.CreateOpenAIClient
+                            |> _.GetAssistantClient()
+                        let assistant = 
+                            client.GetAssistant assistantId
+                        let agent = OpenAIAssistantAgent(assistant, client)
+                        log.LogInformation("Content for OpenAI: {content}, time: {time}", contentForOpenAI, sw.Elapsed)
+                        let finalSlug =  
+                            (agent.InvokeAsync(Microsoft.SemanticKernel.ChatMessageContent(AuthorRole.User,contentForOpenAI))
+                            |> TaskSeq.map _.Message.Content
+                            |> TaskSeq.head).Result
+                            
+                        log.LogInformation("Final slug: {slug}, time: {time}", finalSlug, sw.Elapsed)
+                        let slug:Slug =finalSlug  |> ValueLens.CreateAsResult |> Result.value
+                        m.Sender().Tell(SlugGenerated slug, Akka.Actor.ActorRefs.NoSender)
+                    with
+                    | ex ->
+                        log.LogError(ex, "Error generating slug for URL: {url}. Fallback to hash", url)
+                        let slug:Slug = generateHash url |> ValueLens.CreateAsResult |> Result.value
+                        m.Sender().Tell(SlugGenerated slug, Akka.Actor.ActorRefs.NoSender)
                 
                 return! Stop
             | _ ->
