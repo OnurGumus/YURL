@@ -316,7 +316,7 @@
     .faq-section {
         width: 100%;
         max-width: 50rem; /* 800px - wider than main container */
-        margin-block-start: -20vb; /* Using logical viewport unit instead of vh */
+        margin-block-start: -10rem; /* Using logical viewport unit instead of vh */
         padding-inline: 1.25rem; /* 20px */
         opacity: 0;
         animation: fadeInContent var(--time-slower) var(--ease-out) 2.2s forwards; /* Delayed after main content */
