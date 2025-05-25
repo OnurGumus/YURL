@@ -7,16 +7,14 @@ open System.Security.Cryptography
 open System.Text
 open System
 open System.Net.Http
-open System.Threading.Tasks
 open Microsoft.SemanticKernel.Agents.OpenAI
 open System.ClientModel
-open OpenAI.Chat
 open Microsoft.SemanticKernel.ChatCompletion
-open System.Collections.Generic
 open FSharp.Control
 open System.Text.RegularExpressions
 open Microsoft.Extensions.Logging
-// open Microsoft.SemanticKernel.Agents.OpenAI
+open System.Diagnostics
+
 let client = OpenAIAssistantAgent.CreateOpenAIClient()
 
 type SlugGeneration = 
@@ -65,10 +63,10 @@ let private getHtmlContent (url: string) =
             let metaRegex = Regex("""<meta(?=[^>]*name\s*=\s*['"](description|keywords)['"])(?=[^>]*content\s*=\s*['"]([^'"]*)['"])[^>]*>""", RegexOptions.IgnoreCase ||| RegexOptions.Singleline)
 
             let extractTags (htmlChunk: string) =
-                let titleMatch = titleRegex.Match(htmlChunk)
+                let titleMatch = titleRegex.Match htmlChunk
                 let title = if titleMatch.Success then titleMatch.Groups.[1].Value.Trim() else ""
 
-                let metaMatches = metaRegex.Matches(htmlChunk)
+                let metaMatches = metaRegex.Matches htmlChunk
                 let metaContent =
                     metaMatches
                     |> Seq.cast<Match>
@@ -79,7 +77,7 @@ let private getHtmlContent (url: string) =
                 (title + " " + metaContent).Trim()
 
             let getLimitedSubstring (text: string) (maxLength: int) =
-                if String.IsNullOrWhiteSpace(text) then ""
+                if String.IsNullOrWhiteSpace text then ""
                 else
                     let effectiveLength = min maxLength text.Length
                     text.Substring(0, effectiveLength)
@@ -136,7 +134,7 @@ let behavior env (m: Actor<_>) =
     let config = (env :> FCQRS.Common.IConfigurationWrapper).Configuration
     let log = 
         (env :> FCQRS.Common.ILoggerFactoryWrapper)
-            .LoggerFactory.CreateLogger("SlugGeneration")
+            .LoggerFactory.CreateLogger "SlugGeneration"
     // Asisstant Prompt:
     //Analyze the input text. Identify two primary keywords or the most salient short words.
     //Combine these into a lowercase URL slug, `keyword1_keyword2`.
@@ -144,11 +142,11 @@ let behavior env (m: Actor<_>) =
     //Return only the slug.
     let assistantId = 
         match config.["config:assistant-id"] with
-        | null -> Environment.GetEnvironmentVariable("ASSISTANT_ID")
+        | null -> Environment.GetEnvironmentVariable "ASSISTANT_ID"
         | id -> id
     let openAiKey = 
         match config.["config:openai-api-key"] with
-        | null -> Environment.GetEnvironmentVariable("OPENAI_API_KEY")
+        | null -> Environment.GetEnvironmentVariable "OPENAI_API_KEY" 
         | key -> key
 
     let rec loop () =
@@ -163,7 +161,7 @@ let behavior env (m: Actor<_>) =
                 else
                     try
                     // OpenAI based approach
-                        let sw = System.Diagnostics.Stopwatch.StartNew()
+                        let sw = Stopwatch.StartNew()
 
                         let contentForOpenAI = url |> prepareForOpenAI |> Async.RunSynchronously
                         let client = 
