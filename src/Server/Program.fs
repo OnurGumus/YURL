@@ -152,9 +152,9 @@ let configureApp (app: WebApplication) : WebApplication =
             let config = ThrottlingTrollConfig()
 
             config.Rules <- [|
-                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 5, IntervalInSeconds = 60));
-                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 10, IntervalInSeconds = 3600));
-                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 20, IntervalInSeconds = 86400));
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 15, IntervalInSeconds = 60));
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 30, IntervalInSeconds = 3600));
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 60, IntervalInSeconds = 86400));
             |]
             
             opts.Config <- config
