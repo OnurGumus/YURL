@@ -190,7 +190,7 @@
 @layer layout {
     .container {
         inline-size: 100%;
-        max-inline-size: 36.25rem; /* 580px */
+        max-inline-size: 37.25rem; /* 580px */
         text-align: center;
         padding-block: 2.1875rem; /* 35px */
         padding-inline: 2.5rem; /* 40px */
@@ -470,25 +470,42 @@
         }
 
         .button-loader {
-            display: none;
             inline-size: 1.25rem; /* 20px */
             block-size: 1.25rem; /* 20px */
             border: 3px solid oklch(100% 0 0 / 0.2);
             border-top-color: var(--button-text-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .button-countdown {
+            font-size: var(--fs-large);
+            font-weight: var(--fw-bold);
+            color: var(--button-text-color);
+            font-family: var(--font-mono);
+            text-shadow: 0 0 0.3125rem var(--accent-glow);
+            min-inline-size: 1.5rem; /* Fixed width to prevent layout shift */
+            text-align: center;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .loading-container {
             position: absolute;
             inset-block-start: 50%;
             inset-inline-start: 50%;
             transform: translate(-50%, -50%);
+            display: none;
+            align-items: center;
+            gap: 0.75rem; /* 12px gap between circle and number */
         }
 
         &.loading .button-text {
             opacity: 0;
         }
 
-        &.loading .button-loader {
-            display: block;
+        &.loading .loading-container {
+            display: flex;
         }
 
         &.loading {
@@ -496,6 +513,10 @@
             /* Override hover/active styles */
             transform: none !important; 
             box-shadow: 0 0 0.9375rem var(--accent-glow) !important; /* Reset to base shadow or specific loading shadow */
+        }
+
+        &.loading::before {
+            display: none; /* Hide the shimmer effect during loading */
         }
 
         &::before {
@@ -715,7 +736,7 @@
 
     @keyframes spin {
         to {
-            transform: translate(-50%, -50%) rotate(360deg);
+            transform: rotate(360deg);
         }
     }
 }

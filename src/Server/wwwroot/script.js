@@ -9,7 +9,9 @@ const bodyElement = document.body;
 const shrinkButton = document.querySelector('.shrink-button');
 const buttonText = shrinkButton.querySelector('.button-text');
 const buttonLoader = shrinkButton.querySelector('.button-loader');
+const buttonCountdown = document.getElementById('buttonCountdown');
 let currentTypingTimeout = null;
+let countdownInterval = null;
 
 function isValidUrlFormat(url) {
     if (!url) {
@@ -64,6 +66,7 @@ shortenerForm.addEventListener('submit', async function (event) {
     // Disable button and show loader
     shrinkButton.disabled = true;
     shrinkButton.classList.add('loading');
+    startCountdown();
 
     let slug = '';
     try {
@@ -88,12 +91,14 @@ shortenerForm.addEventListener('submit', async function (event) {
         // Enable button and hide loader even if there's an error
         shrinkButton.disabled = false;
         shrinkButton.classList.remove('loading');
+        stopCountdown();
         return;
     }
 
     // Enable button and hide loader
     shrinkButton.disabled = false;
     shrinkButton.classList.remove('loading');
+    stopCountdown();
 
     // UPDATED SHORT URL DOMAIN
     const fullShortenedUrl = `${window.location.host}/${slug}`;
@@ -141,3 +146,25 @@ copyButton.addEventListener('click', function () {
             setTimeout(() => { copyFeedback.style.opacity = '0'; copyFeedback.textContent = ''; }, 3000);
         });
 });
+
+function startCountdown() {
+    let count = 8;
+    buttonCountdown.textContent = count;
+    
+    countdownInterval = setInterval(() => {
+        count--;
+        buttonCountdown.textContent = count;
+        
+        if (count <= 0) {
+            stopCountdown();
+        }
+    }, 1000);
+}
+
+function stopCountdown() {
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+    }
+    buttonCountdown.textContent = '';
+}
