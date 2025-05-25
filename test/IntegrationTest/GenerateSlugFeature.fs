@@ -25,7 +25,7 @@ let ``no URL (.*) has been shortened yet`` (url: string) = ()
 
 
 [<Given>]
-let ``the page at (.*) returns HTML with title (.*)`` (url: string) (title: string) =
+let ``the page at "(.*)" returns HTML with title "(.*)"`` (url: string) (title: string) =
     (task {
         let builder = WebApplication.CreateBuilder()
 
@@ -37,12 +37,14 @@ let ``the page at (.*) returns HTML with title (.*)`` (url: string) (title: stri
                 let path = System.IO.Path.GetTempFileName() + ".db"
                 printfn "Using in-memory configuration file: %s" path
                 let connectionString = $"Data Source={path}"
+                System.Environment.SetEnvironmentVariable("OPENAI_API_KEY", "")
                 configurationBuilder.AddInMemoryCollection([ 
                     "config:connection-string",  connectionString
                     "config:akka:persistence:journal:sql:connection-string",  connectionString
                     "config:akka:persistence:query:journal:sql:connection-string", connectionString
                     "config:akka:persistence:snapshot-store:sql:connection-string", connectionString
-                    "config:OPENAI_API_KEY", ""
+                    "config:config:openai-api-key", ""
+                    "config:assistant-id", ""
                     ] |> Map.ofList)
                 |> ignore)
             .ConfigureServices Program.configureServices
@@ -62,10 +64,10 @@ let ``the page at (.*) returns HTML with title (.*)`` (url: string) (title: stri
         .Result
 
 [<When>]
-let ``I shorten the URL (.*)`` (url: string) (context: TestContext) =
+let ``I shorten the URL "(.*)"`` (url: string) (context: TestContext) =
     (task {
         // Create the request body
-        let requestBody = sprintf """{"url": %s}""" url
+        let requestBody = sprintf """{"url": "%s"}""" url
 
         let content =
             new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json")
@@ -88,7 +90,7 @@ let ``I shorten the URL (.*)`` (url: string) (context: TestContext) =
         .Result
 
 [<Then>]
-let ``the system should create the slug (.*)`` (expectedSlug: string) (context: TestContext) =
+let ``the system should create the slug "(.*)"`` (expectedSlug: string) (context: TestContext) =
     match context.GeneratedSlug with
     | None -> failwith "No slug was generated"
     | Some slug ->
@@ -99,9 +101,21 @@ let ``the system should create the slug (.*)`` (expectedSlug: string) (context: 
     context
 
 [<Then>]
-let ``navigating to (.*) should redirect to (.*)`` (slug: string) (url: string) (context: TestContext) =
-    // This is just a stub for now - we haven't implemented redirection functionality yet
-   ( task {
-        let! response = context.HttpClient.GetAsync(sprintf "http://localhost/%s" context.GeneratedSlug.Value)
-        Expect.equal response.StatusCode System.Net.HttpStatusCode.Redirect "Should redirect to the original URL"
+let ``navigating to "(.*)" should redirect to "(.*)"`` (slug: string) (url: string) (context: TestContext) =
+    (task {
+        let! response = context.HttpClient.GetAsync(sprintf "http://localhost%s" slug)
+        
+        // Check that we get a redirect status code (301 or 302)
+        let isRedirect = 
+            response.StatusCode = System.Net.HttpStatusCode.Redirect ||
+            response.StatusCode = System.Net.HttpStatusCode.MovedPermanently
+        Expect.isTrue isRedirect "Should return a redirect status code (301 or 302)"
+        
+        // Check that the Location header contains the correct URL
+        let locationHeader = response.Headers.Location 
+        Expect.isNotNull locationHeader "Location header should be present"
+        let locationHeader = locationHeader |> nonNull
+        Expect.equal (locationHeader.ToString()) url "Should redirect to the correct URL"
     }).Wait()
+
+    context

@@ -156,7 +156,7 @@ let behavior env (m: Actor<_>) =
             let! (mail: obj) = m.Receive()
             match mail with
             | :? Url as ResultValue url ->
-                if String.IsNullOrEmpty openAiKey then
+                if String.IsNullOrEmpty openAiKey || String.IsNullOrEmpty assistantId then
                     // Original hash generation if OpenAI API key is not available
                     let slug:Slug = generateHash url |> ValueLens.CreateAsResult |> Result.value
                     m.Sender().Tell(SlugGenerated slug, Akka.Actor.ActorRefs.NoSender)
@@ -165,13 +165,14 @@ let behavior env (m: Actor<_>) =
                     // OpenAI based approach
                         let sw = System.Diagnostics.Stopwatch.StartNew()
 
-                        let contentForOpenAI = (prepareForOpenAI url) |> Async.RunSynchronously
+                        let contentForOpenAI = url |> prepareForOpenAI |> Async.RunSynchronously
                         let client = 
                             openAiKey
                             |> nonNull
                             |>ApiKeyCredential
                             |>OpenAIAssistantAgent.CreateOpenAIClient
                             |> _.GetAssistantClient()
+                            
                         let assistant = 
                             client.GetAssistant assistantId
                         let agent = OpenAIAssistantAgent(assistant, client)
