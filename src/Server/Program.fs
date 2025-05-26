@@ -133,25 +133,36 @@ let private getClientIp (request: obj) : string =
     let proxyRequest = request :?> IIncomingHttpRequestProxy
     let httpContext = proxyRequest.Request.HttpContext
     let logger = httpContext.RequestServices.GetService<ILogger<obj>>() |> nonNull
-    
-    let ipAddress =
-        match httpContext.Connection.RemoteIpAddress with
-        | null -> 
-            logger.LogWarning("RemoteIpAddress is null, using 'unknown_ip'")
-            "unknown_ip"
-        | addr ->
-            let ip = addr.ToString()
-            logger.LogInformation("Extracted IP address: {IpAddress}", ip)
-            ip
-    
-    // Also log headers that might contain the real IP
     let headers = httpContext.Request.Headers
-    if headers.ContainsKey("X-Forwarded-For") then
-        logger.LogInformation("X-Forwarded-For header: {XForwardedFor}", headers.["X-Forwarded-For"].ToString())
-    if headers.ContainsKey("X-Real-IP") then
-        logger.LogInformation("X-Real-IP header: {XRealIP}", headers.["X-Real-IP"].ToString())
-    if headers.ContainsKey("CF-Connecting-IP") then
-        logger.LogInformation("CF-Connecting-IP header: {CFConnectingIP}", headers.["CF-Connecting-IP"].ToString())
+    
+    // Try to get the real client IP from proxy headers first
+    let ipAddress =
+        if headers.ContainsKey("X-Forwarded-For") then
+            let xForwardedFor = headers.["X-Forwarded-For"].ToString()
+            logger.LogInformation("Using X-Forwarded-For header: {XForwardedFor}", xForwardedFor)
+            // X-Forwarded-For can contain multiple IPs (client, proxy1, proxy2, etc.)
+            // The first IP is typically the original client IP
+            let firstIp = xForwardedFor.Split(',').[0].Trim()
+            logger.LogInformation("Extracted client IP from X-Forwarded-For: {ClientIP}", firstIp)
+            firstIp
+        elif headers.ContainsKey("X-Real-IP") then
+            let xRealIp = headers.["X-Real-IP"].ToString()
+            logger.LogInformation("Using X-Real-IP header: {XRealIP}", xRealIp)
+            xRealIp
+        elif headers.ContainsKey("CF-Connecting-IP") then
+            let cfConnectingIp = headers.["CF-Connecting-IP"].ToString()
+            logger.LogInformation("Using CF-Connecting-IP header: {CFConnectingIP}", cfConnectingIp)
+            cfConnectingIp
+        else
+            // Fall back to direct connection IP
+            match httpContext.Connection.RemoteIpAddress with
+            | null -> 
+                logger.LogWarning("No proxy headers found and RemoteIpAddress is null, using 'unknown_ip'")
+                "unknown_ip"
+            | addr ->
+                let ip = addr.ToString()
+                logger.LogInformation("No proxy headers found, using direct connection IP: {IpAddress}", ip)
+                ip
     
     ipAddress
 
@@ -170,9 +181,9 @@ let configureApp (app: WebApplication) : WebApplication =
             let config = ThrottlingTrollConfig()
 
             config.Rules <- [|
-                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 150, IntervalInSeconds = 60));
-                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 300, IntervalInSeconds = 3600));
-                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 600, IntervalInSeconds = 86400));
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 15, IntervalInSeconds = 60));
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 30, IntervalInSeconds = 3600));
+                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 60, IntervalInSeconds = 86400));
             |]
             
             opts.Config <- config
