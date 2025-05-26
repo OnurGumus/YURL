@@ -25,6 +25,11 @@ let initialState = {
     Data = (NA: SagaData)
 }
 
+// Helper function to generate actor-safe names from slugs
+let generateActorSafeName (slug: Slug) =
+    let slugString = slug.ToString()
+    GenerateSlug.generateHash slugString
+
 let apply (sagaState: SagaState<SagaData, State>) = sagaState
 
 let handleEvent (event: obj) (state: SagaState<SagaData, State>) = //: EventAction<State>  =
@@ -94,7 +99,7 @@ let applySideEffects
         let suffixSlug =
             FactoryAndName {
                 Factory = suffixSlugFactory
-                Name = TargetName.Name(slug.ToString())
+                Name = TargetName.Name(generateActorSafeName slug)
             }
 
         NoEffect,
