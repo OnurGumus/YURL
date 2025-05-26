@@ -131,11 +131,29 @@ builder.WebHost
 
 let private getClientIp (request: obj) : string =
     let proxyRequest = request :?> IIncomingHttpRequestProxy
-    match proxyRequest.Request.HttpContext.Connection.RemoteIpAddress with
-    | null -> "unknown_ip"
-    | addr ->
-        let ip = addr.ToString()
-        ip
+    let httpContext = proxyRequest.Request.HttpContext
+    let logger = httpContext.RequestServices.GetService<ILogger>() |> nonNull
+    
+    let ipAddress =
+        match httpContext.Connection.RemoteIpAddress with
+        | null -> 
+            logger.LogWarning("RemoteIpAddress is null, using 'unknown_ip'")
+            "unknown_ip"
+        | addr ->
+            let ip = addr.ToString()
+            logger.LogInformation("Extracted IP address: {IpAddress}", ip)
+            ip
+    
+    // Also log headers that might contain the real IP
+    let headers = httpContext.Request.Headers
+    if headers.ContainsKey("X-Forwarded-For") then
+        logger.LogInformation("X-Forwarded-For header: {XForwardedFor}", headers.["X-Forwarded-For"].ToString())
+    if headers.ContainsKey("X-Real-IP") then
+        logger.LogInformation("X-Real-IP header: {XRealIP}", headers.["X-Real-IP"].ToString())
+    if headers.ContainsKey("CF-Connecting-IP") then
+        logger.LogInformation("CF-Connecting-IP header: {CFConnectingIP}", headers.["CF-Connecting-IP"].ToString())
+    
+    ipAddress
 
 // Helper function to create rules for the slug API
 let private createSlugApiRateLimitRule (limitMethod: ThrottlingTroll.RateLimitMethod) =
