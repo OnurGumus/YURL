@@ -4,14 +4,15 @@ const resultArea = document.getElementById('resultArea');
 const shortenedUrlDisplay = document.getElementById('shortenedUrlDisplay');
 const copyButton = document.getElementById('copyButton');
 const copyFeedback = document.getElementById('copyFeedback');
-const themeToggleButton = document.getElementById('themeToggle');
-const bodyElement = document.body;
 const shrinkButton = document.querySelector('.shrink-button');
-const buttonText = shrinkButton.querySelector('.button-text');
-const buttonLoader = shrinkButton.querySelector('.button-loader');
+const buttonText = shrinkButton?.querySelector('.button-text');
+const buttonLoader = shrinkButton?.querySelector('.button-loader');
 const buttonCountdown = document.getElementById('buttonCountdown');
 let currentTypingTimeout = null;
 let countdownInterval = null;
+
+// Only proceed with form functionality if the form exists
+if (shortenerForm && urlInput && resultArea && shortenedUrlDisplay && copyButton && copyFeedback && shrinkButton) {
 
 function isValidUrlFormat(url) {
     if (!url) {
@@ -30,25 +31,6 @@ function isValidUrlFormat(url) {
     }
     return true;
 }
-
-function applyTheme(theme) {
-    if (theme === 'light') { bodyElement.classList.add('light-mode'); }
-    else { bodyElement.classList.remove('light-mode'); }
-}
-
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme) { applyTheme(savedTheme); }
-else {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) { applyTheme('light'); }
-    else { applyTheme('dark'); }
-}
-
-themeToggleButton.addEventListener('click', () => {
-    const currentTheme = bodyElement.classList.contains('light-mode') ? 'light' : 'dark';
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    applyTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-});
 
 shortenerForm.addEventListener('submit', async function (event) {
     event.preventDefault();
@@ -149,16 +131,18 @@ copyButton.addEventListener('click', function () {
 
 function startCountdown() {
     let count = 8;
-    buttonCountdown.textContent = count;
-    
-    countdownInterval = setInterval(() => {
-        count--;
+    if (buttonCountdown) {
         buttonCountdown.textContent = count;
         
-        if (count <= 0) {
-            stopCountdown();
-        }
-    }, 1000);
+        countdownInterval = setInterval(() => {
+            count--;
+            buttonCountdown.textContent = count;
+            
+            if (count <= 0) {
+                stopCountdown();
+            }
+        }, 1000);
+    }
 }
 
 function stopCountdown() {
@@ -166,5 +150,9 @@ function stopCountdown() {
         clearInterval(countdownInterval);
         countdownInterval = null;
     }
-    buttonCountdown.textContent = '';
+    if (buttonCountdown) {
+        buttonCountdown.textContent = '';
+    }
 }
+
+} // End of form functionality check

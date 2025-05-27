@@ -96,6 +96,7 @@ let webApp () : HttpHandler =
         GET >=> route "/" >=> indexPageHandler
         POST >=> route "/api/slug" >=> slugHandler
         GET >=> routef "/%s" redirectHandler
+        POST >=> route "/api/report-abuse" >=> AbuseReportHandler.handler
     ]
 
 let configureServices (services: IServiceCollection) =
@@ -175,6 +176,15 @@ let private createSlugApiRateLimitRule (limitMethod: ThrottlingTroll.RateLimitMe
         IdentityIdExtractor = getClientIp
     )
 
+// Helper function to create rules for the abuse report API
+let private createAbuseReportRateLimitRule (limitMethod: ThrottlingTroll.RateLimitMethod) =
+    ThrottlingTrollRule(
+        UriPattern = "/api/report-abuse",
+        Method = "POST", 
+        LimitMethod = limitMethod,
+        IdentityIdExtractor = getClientIp
+    )
+
 let configureApp (app: WebApplication) : WebApplication =
     app.UseStaticFiles()
         .UseThrottlingTroll(fun opts -> 
@@ -184,6 +194,10 @@ let configureApp (app: WebApplication) : WebApplication =
                 createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 15, IntervalInSeconds = 60));
                 createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 30, IntervalInSeconds = 3600));
                 createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 60, IntervalInSeconds = 86400));
+                // Abuse report rate limits - much stricter
+                createAbuseReportRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 2, IntervalInSeconds = 300)); // 3 per 5 minutes
+                createAbuseReportRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 3, IntervalInSeconds = 3600)); // 10 per hour
+                createAbuseReportRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 5, IntervalInSeconds = 86400)); // 20 per day
             |]
             
             opts.Config <- config

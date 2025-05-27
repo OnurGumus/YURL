@@ -17,6 +17,7 @@
     <Compile Include="UrlHashSaga.fs" />
     <Compile Include="Query.fs" />
     <Compile Include="Bootstrap.fs" />
+    <Compile Include="AbuseReportHandler.fs" />
     <Compile Include="Program.fs" />
     <Content Include="templates/**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

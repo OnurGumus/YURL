@@ -756,19 +756,26 @@
     }
 
     .copy-feedback {
-        display: block;
-        margin-block-start: 0.625rem; /* 10px */
-        font-size: var(--fs-xxsmall);
-        font-family: var(--font-mono);
+        position: absolute;
+        inset-block-start: 100%;
+        inset-inline-start: 50%;
+        transform: translateX(-50%);
+        margin-block-start: 0.5rem; /* 8px */
+        font-size: var(--fs-small);
         color: var(--accent-primary);
         opacity: 0;
-        block-size: 1.2em;
-        transition: opacity var(--time-medium) var(--ease-standard), color var(--time-slow) var(--ease-standard);
-        text-transform: lowercase;
-        padding-inline-start: 0.625rem; /* 10px */
+        transition: opacity var(--time-medium) var(--ease-standard);
 
         &::before {
-            content: "vector_status: ";
+            content: '';
+            position: absolute;
+            inset-block-start: -0.25rem; /* -4px */
+            inset-inline-start: 50%;
+            transform: translateX(-50%);
+            inline-size: 0.5rem; /* 8px */
+            block-size: 0.5rem; /* 8px */
+            background-color: var(--accent-primary);
+            border-radius: 50%;
         }
     }
 }
