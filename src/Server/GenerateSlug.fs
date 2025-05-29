@@ -1,5 +1,7 @@
 module GenerateSlug
+
 #nowarn 57
+
 open Akkling
 open Model
 open FCQRS.Model.Data
@@ -17,56 +19,68 @@ open System.Diagnostics
 
 let client = OpenAIAssistantAgent.CreateOpenAIClient()
 
-type SlugGeneration = 
-        | SlugGenerated of Slug
-        | SlugGenerationFailed of ShortString
+type SlugGeneration =
+    | SlugGenerated of Slug
+    | SlugGenerationFailed of ShortString
 
 let private isHtmlContentType (contentType: string | null) =
-    match contentType with  
+    match contentType with
     | null -> false
-    | contentType -> 
-        contentType.Contains("text/html", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/xhtml+xml", StringComparison.OrdinalIgnoreCase)
+    | contentType ->
+        contentType.Contains("text/html", StringComparison.OrdinalIgnoreCase)
+        || contentType.Contains("application/xhtml+xml", StringComparison.OrdinalIgnoreCase)
 
 let private checkContentType (url: string) =
-    async {
+    task {
         try
             use client = new HttpClient()
             use request = new HttpRequestMessage(HttpMethod.Head, url)
-            let! response = client.SendAsync request |> Async.AwaitTask
-            let contentType = 
+            let! response = client.SendAsync request
+
+            let contentType =
                 match response.Content.Headers.ContentType with
                 | null -> None
-                | contentType -> Some contentType.MediaType 
+                | contentType -> Some contentType.MediaType
 
             return contentType |> Option.map isHtmlContentType |> Option.defaultValue false
-        with
-        | _ -> return false
+        with _ ->
+            return false
     }
 
 let private getHtmlContent (url: string) =
-    async {
+    task {
         try
             use client = new HttpClient()
             client.Timeout <- TimeSpan.FromSeconds(10.0)
 
-            let! response = client.GetAsync(url) |> Async.AwaitTask
+            let! response = client.GetAsync(url)
             response.EnsureSuccessStatusCode() |> ignore
 
-            let! fullHtmlContent = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+            let! fullHtmlContent = response.Content.ReadAsStringAsync()
 
             let initialProcessingLength = 4096
             let additionalProcessingLength = 3000
             let maxOutputLength = 2000
 
             let titleRegex = Regex("<title>([^<]+)</title>", RegexOptions.IgnoreCase)
-            let metaRegex = Regex("""<meta(?=[^>]*name\s*=\s*['"](description|keywords)['"])(?=[^>]*content\s*=\s*['"]([^'"]*)['"])[^>]*>""", RegexOptions.IgnoreCase ||| RegexOptions.Singleline)
+
+            let metaRegex =
+                Regex(
+                    """<meta(?=[^>]*name\s*=\s*['"](description|keywords)['"])(?=[^>]*content\s*=\s*['"]([^'"]*)['"])[^>]*>""",
+                    RegexOptions.IgnoreCase ||| RegexOptions.Singleline
+                )
 
             let extractTags (htmlChunk: string) =
                 let titleMatch = titleRegex.Match htmlChunk
-                let title = if titleMatch.Success then titleMatch.Groups.[1].Value.Trim() else ""
+
+                let title =
+                    if titleMatch.Success then
+                        titleMatch.Groups.[1].Value.Trim()
+                    else
+                        ""
 
                 let metaMatches = metaRegex.Matches htmlChunk
+
                 let metaContent =
                     metaMatches
                     |> Seq.cast<Match>
@@ -77,7 +91,8 @@ let private getHtmlContent (url: string) =
                 (title + " " + metaContent).Trim()
 
             let getLimitedSubstring (text: string) (maxLength: int) =
-                if String.IsNullOrWhiteSpace text then ""
+                if String.IsNullOrWhiteSpace text then
+                    ""
                 else
                     let effectiveLength = min maxLength text.Length
                     text.Substring(0, effectiveLength)
@@ -85,7 +100,10 @@ let private getHtmlContent (url: string) =
             let initialHtmlChunk = getLimitedSubstring fullHtmlContent initialProcessingLength
             let mutable extractedContent = extractTags initialHtmlChunk
 
-            if String.IsNullOrWhiteSpace(extractedContent) && fullHtmlContent.Length > initialProcessingLength then
+            if
+                String.IsNullOrWhiteSpace(extractedContent)
+                && fullHtmlContent.Length > initialProcessingLength
+            then
                 let extendedProcessingLength = initialProcessingLength + additionalProcessingLength
                 let extendedHtmlChunk = getLimitedSubstring fullHtmlContent extendedProcessingLength
                 extractedContent <- extractTags extendedHtmlChunk
@@ -94,12 +112,12 @@ let private getHtmlContent (url: string) =
                 return getLimitedSubstring initialHtmlChunk maxOutputLength
             else
                 return getLimitedSubstring extractedContent maxOutputLength
-        with
-        | _ -> return url
+        with _ ->
+            return url
     }
 
 let private prepareForOpenAI (url: string) =
-    async {
+    task {
         let! isHtml = checkContentType url
         let urlPrefix = url.Substring(0, min 50 url.Length) // Get first 50 chars of URL
 
@@ -109,6 +127,7 @@ let private prepareForOpenAI (url: string) =
             let combinedContent = urlPrefix + " " + htmlBasedContent
             // Ensure the combined content does not exceed a reasonable length for OpenAI
             let maxOpenAiInputLength = 1000 // Reduced to 1000
+
             if combinedContent.Length > maxOpenAiInputLength then
                 return combinedContent.Substring(0, maxOpenAiInputLength)
             else
@@ -125,73 +144,82 @@ let generateHash (input: string) =
     let hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input))
     let hashString = System.Convert.ToBase64String(hashBytes)
     // Take first 8 characters and replace URL-unsafe characters
-    hashString.Substring(0, 8)
-        .Replace("+", "-")
-        .Replace("/", "_")
-        .Replace("=", "")
+    hashString.Substring(0, 8).Replace("+", "-").Replace("/", "_").Replace("=", "")
+
+let generateSlug url openAiKey assistantId (log: ILogger) =
+    task {
+        let sw = Stopwatch.StartNew()
+
+        try
+            let! contentForOpenAI = url |> prepareForOpenAI
+
+            let client =
+                openAiKey
+                |> nonNull
+                |> ApiKeyCredential
+                |> OpenAIAssistantAgent.CreateOpenAIClient
+                |> _.GetAssistantClient()
+
+            let assistant = client.GetAssistant assistantId
+            let agent = OpenAIAssistantAgent(assistant, client)
+
+            log.LogInformation("Content for OpenAI: {content}, time: {time}", contentForOpenAI, sw.Elapsed)
+
+            let! finalSlug =
+                (agent.InvokeAsync(Microsoft.SemanticKernel.ChatMessageContent(AuthorRole.User, contentForOpenAI))
+                 |> TaskSeq.map _.Message.Content
+                 |> TaskSeq.head)
+                |> Async.AwaitTask
+
+            log.LogInformation("Final slug: {slug}, time: {time}", finalSlug, sw.Elapsed)
+            return finalSlug |> ValueLens.CreateAsResult |> Result.value
+        with ex ->
+            log.LogError(ex, "Error generating slug for URL: {url}", url)
+            return generateHash url |> ValueLens.CreateAsResult |> Result.value
+    }
 
 let behavior env (m: Actor<_>) =
     let config = (env :> FCQRS.Common.IConfigurationWrapper).Configuration
-    let log = 
-        (env :> FCQRS.Common.ILoggerFactoryWrapper)
-            .LoggerFactory.CreateLogger "SlugGeneration"
+
+    let log =
+        (env :> FCQRS.Common.ILoggerFactoryWrapper).LoggerFactory.CreateLogger "SlugGeneration"
     // Asisstant Prompt:
     //Analyze the input text. Identify two primary keywords or the most salient short words.
     //Combine these into a lowercase URL slug, `keyword1_keyword2`.
     // The slug must be under 15 characters total.
     //Return only the slug.
-    let assistantId = 
+    let assistantId =
         match config.["config:assistant-id"] with
         | null -> Environment.GetEnvironmentVariable "ASSISTANT_ID"
         | id -> id
-    let openAiKey = 
+
+    let openAiKey =
         match config.["config:openai-api-key"] with
-        | null -> Environment.GetEnvironmentVariable "OPENAI_API_KEY" 
+        | null -> Environment.GetEnvironmentVariable "OPENAI_API_KEY"
         | key -> key
 
     let rec loop () =
         actor {
             let! (mail: obj) = m.Receive()
+
             match mail with
             | :? Url as ResultValue url ->
-                if String.IsNullOrEmpty openAiKey || String.IsNullOrEmpty assistantId then
-                    // Original hash generation if OpenAI API key is not available
-                    let slug:Slug = generateHash url |> ValueLens.CreateAsResult |> Result.value
-                    m.Sender().Tell(SlugGenerated slug, Akka.Actor.ActorRefs.NoSender)
-                else
-                    try
-                    // OpenAI based approach
-                        let sw = Stopwatch.StartNew()
+                let! slug =
+                    task {
+                        if String.IsNullOrEmpty openAiKey || String.IsNullOrEmpty assistantId then
+                            return generateHash url |> ValueLens.CreateAsResult |> Result.value
+                        else
+                            try
+                                return! generateSlug url openAiKey assistantId log
+                            with ex ->
+                                log.LogError(ex, "Error generating slug for URL: {url}. Fallback to hash", url)
+                                return generateHash url |> ValueLens.CreateAsResult |> Result.value
+                    }
 
-                        let contentForOpenAI = url |> prepareForOpenAI |> Async.RunSynchronously
-                        let client = 
-                            openAiKey
-                            |> nonNull
-                            |>ApiKeyCredential
-                            |>OpenAIAssistantAgent.CreateOpenAIClient
-                            |> _.GetAssistantClient()
-                            
-                        let assistant = 
-                            client.GetAssistant assistantId
-                        let agent = OpenAIAssistantAgent(assistant, client)
-                        log.LogInformation("Content for OpenAI: {content}, time: {time}", contentForOpenAI, sw.Elapsed)
-                        let finalSlug =  
-                            (agent.InvokeAsync(Microsoft.SemanticKernel.ChatMessageContent(AuthorRole.User,contentForOpenAI))
-                            |> TaskSeq.map _.Message.Content
-                            |> TaskSeq.head).Result
-                            
-                        log.LogInformation("Final slug: {slug}, time: {time}", finalSlug, sw.Elapsed)
-                        let slug:Slug =finalSlug  |> ValueLens.CreateAsResult |> Result.value
-                        m.Sender().Tell(SlugGenerated slug, Akka.Actor.ActorRefs.NoSender)
-                    with
-                    | ex ->
-                        log.LogError(ex, "Error generating slug for URL: {url}. Fallback to hash", url)
-                        let slug:Slug = generateHash url |> ValueLens.CreateAsResult |> Result.value
-                        m.Sender().Tell(SlugGenerated slug, Akka.Actor.ActorRefs.NoSender)
-                
+                m.Sender().Tell(SlugGenerated slug, Akka.Actor.ActorRefs.NoSender)
                 return! Stop
-            | _ ->
-                return! loop ()
+
+            | _ -> return! loop ()
         }
 
     loop ()
