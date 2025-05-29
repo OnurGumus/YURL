@@ -14,27 +14,12 @@ open Microsoft.Extensions.DependencyInjection
 open System
 open ThrottlingTroll
 open Hocon.Extensions.Configuration
-open FCQRS.Model.Data
-open FsToolkit.ErrorHandling
 open Giraffe.EndpointRouting
 
 #if DEBUG
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 #endif
 
-[<CLIMutable>]
-type UrlRequest = { Url: string }
-
-let ensureUrlHasProtocol (url: string) =
-    if url.StartsWith("http://") || url.StartsWith("https://") then
-        url
-    else
-        "https://" + url
-
-let cid () : CID =
-    Guid.CreateVersion7().ToString() |> ValueLens.CreateAsResult |> Result.value
-
-let builder = WebApplication.CreateBuilder()
 
 let indexPageHandler: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
@@ -42,63 +27,14 @@ let indexPageHandler: HttpHandler =
         let indexHtml = Path.Combine(contentRootPath, "templates", "index.html")
 
         task {
-            let compiledHtml = init |> add "someValue" "myValue" |> fromFile indexHtml
+            let compiledHtml = init |> fromFile indexHtml
             return! htmlString compiledHtml next ctx
         }
 
-let slugHandler: HttpHandler =
-    fun (next: HttpFunc) (ctx: HttpContext) ->
-        task {
-            let! url = ctx.BindModelAsync<UrlRequest>()
-            let originalUrl = ensureUrlHasProtocol url.Url
-            let cqrsService = ctx.GetService<Bootstrap.CQRSService>()
-
-            // First check if URL already exists
-            let! existingUrl =
-                cqrsService.Query<Query.Url>(filter = Predicate.Equal("OriginalUrl", originalUrl), take = 1)
-                |> Async.map (fun urls -> urls |> Seq.tryHead)
-
-            match existingUrl with
-            | Some existing ->
-                // URL already exists, return existing slug
-                return! json existing.Slug next ctx
-            | None ->
-                // URL doesn't exist, generate new slug
-                let url = originalUrl |> ValueLens.TryCreate |> Result.value
-                let cid = cid ()
-                use s = cqrsService.Sub.Subscribe((fun e -> e.CID = cid), 1)
-                let! slug = cqrsService.GenerateSlug cid url
-
-                if slug.IsOk then
-                    s.Task.Wait()
-
-                let logger = ctx.GetLogger "SlugHandler"
-                logger.LogInformation("Received URL: {Url}", url)
-
-                let! res =
-                    cqrsService.Query<Query.Url>(filter = Predicate.Equal("OriginalUrl", originalUrl), take = 1)
-                    |> Async.map Seq.head
-
-                return! json res.Slug next ctx
-        }
-
-let redirectHandler slug : HttpHandler =
-    fun (next: HttpFunc) (ctx: HttpContext) ->
-        task {
-            let cqrsService = ctx.GetService<Bootstrap.CQRSService>()
-
-            match! cqrsService.Query<Query.Url>(filter = Predicate.Equal("Slug", slug), take = 1) with
-            | [] -> return! setStatusCode 404 next ctx
-            | [ url ] ->
-                let redirectUrl = ensureUrlHasProtocol url.OriginalUrl
-                return! redirectTo false redirectUrl next ctx
-            | _ -> return! setStatusCode 500 next ctx
-        }
-
 let endpoints () = [
-    GET [ route "/" indexPageHandler; routef "/%s" redirectHandler ]
+    GET [ route "/" indexPageHandler; routef "/%s" SlugHandler.redirectHandler ]
     POST [
-        route "/api/slug" slugHandler
+        route "/api/slug" SlugHandler.slugHandler
         route "/api/report-abuse" AbuseReportHandler.handler
     ]
 ]
@@ -128,86 +64,21 @@ let configureAppConfiguration (ctx: WebHostBuilderContext) (config: IConfigurati
         .AddEnvironmentVariables()
     |> ignore
 
+let builder = WebApplication.CreateBuilder()
+
 builder.WebHost
     .ConfigureLogging(configureLogging)
     .ConfigureAppConfiguration(configureAppConfiguration)
-    .ConfigureServices(configureServices)
+    .ConfigureServices
+    configureServices
 |> ignore
 
-let private getClientIp (request: obj) : string =
-    let proxyRequest = request :?> IIncomingHttpRequestProxy
-    let httpContext = proxyRequest.Request.HttpContext
-    let logger = httpContext.RequestServices.GetService<ILogger<obj>>() |> nonNull
-    let headers = httpContext.Request.Headers
-
-    // Try to get the real client IP from proxy headers first
-    let ipAddress =
-        if headers.ContainsKey("X-Forwarded-For") then
-            let xForwardedFor = headers.["X-Forwarded-For"].ToString()
-            logger.LogInformation("Using X-Forwarded-For header: {XForwardedFor}", xForwardedFor)
-            // X-Forwarded-For can contain multiple IPs (client, proxy1, proxy2, etc.)
-            // The first IP is typically the original client IP
-            let firstIp = xForwardedFor.Split(',').[0].Trim()
-            logger.LogInformation("Extracted client IP from X-Forwarded-For: {ClientIP}", firstIp)
-            firstIp
-        elif headers.ContainsKey("X-Real-IP") then
-            let xRealIp = headers.["X-Real-IP"].ToString()
-            logger.LogInformation("Using X-Real-IP header: {XRealIP}", xRealIp)
-            xRealIp
-        elif headers.ContainsKey("CF-Connecting-IP") then
-            let cfConnectingIp = headers.["CF-Connecting-IP"].ToString()
-            logger.LogInformation("Using CF-Connecting-IP header: {CFConnectingIP}", cfConnectingIp)
-            cfConnectingIp
-        else
-            // Fall back to direct connection IP
-            match httpContext.Connection.RemoteIpAddress with
-            | null ->
-                logger.LogWarning("No proxy headers found and RemoteIpAddress is null, using 'unknown_ip'")
-                "unknown_ip"
-            | addr ->
-                let ip = addr.ToString()
-                logger.LogInformation("No proxy headers found, using direct connection IP: {IpAddress}", ip)
-                ip
-
-    ipAddress
-
-// Helper function to create rules for the slug API
-let private createSlugApiRateLimitRule (limitMethod: ThrottlingTroll.RateLimitMethod) =
-    ThrottlingTrollRule(
-        UriPattern = "/api/slug", // Or "^/api/slug$" for exact regex match
-        Method = "POST",
-        LimitMethod = limitMethod,
-        IdentityIdExtractor = getClientIp
-    )
-
-// Helper function to create rules for the abuse report API
-let private createAbuseReportRateLimitRule (limitMethod: ThrottlingTroll.RateLimitMethod) =
-    ThrottlingTrollRule(
-        UriPattern = "/api/report-abuse",
-        Method = "POST",
-        LimitMethod = limitMethod,
-        IdentityIdExtractor = getClientIp
-    )
-
-let configureApp (app: WebApplication) : WebApplication =
-    printfn "%A" (endpoints ())
+let configureApp (app: WebApplication) =
+    app.Environment.ApplicationName <- "yurl"
 
     app
         .UseStaticFiles()
-        .UseThrottlingTroll(fun opts ->
-            let config = ThrottlingTrollConfig()
-
-            config.Rules <- [|
-                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 15, IntervalInSeconds = 60))
-                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 30, IntervalInSeconds = 3600))
-                createSlugApiRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 60, IntervalInSeconds = 86400))
-                // Abuse report rate limits - much stricter
-                createAbuseReportRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 2, IntervalInSeconds = 300)) // 3 per 5 minutes
-                createAbuseReportRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 3, IntervalInSeconds = 3600)) // 10 per hour
-                createAbuseReportRateLimitRule (FixedWindowRateLimitMethod(PermitLimit = 5, IntervalInSeconds = 86400)) // 20 per day
-            |]
-
-            opts.Config <- config)
+        .UseThrottlingTroll(fun opts -> opts.Config <- Throttling.config)
         .UseRouting()
         .UseEndpoints(fun e -> e.MapGiraffeEndpoints(endpoints ()))
     |> ignore

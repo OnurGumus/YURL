@@ -18,6 +18,8 @@
     <Compile Include="Query.fs" />
     <Compile Include="Bootstrap.fs" />
     <Compile Include="AbuseReportHandler.fs" />
+    <Compile Include="SlugHandler.fs" />
+    <Compile Include="Thorttling.fs" />
     <Compile Include="Program.fs" />
     <Content Include="templates/**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

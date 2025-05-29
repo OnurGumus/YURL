@@ -38,16 +38,21 @@ let ``the page at "(.*)" returns HTML with title "(.*)"`` (url: string) (title: 
                 printfn "Using in-memory configuration file: %s" path
                 let connectionString = $"Data Source={path}"
                 System.Environment.SetEnvironmentVariable("OPENAI_API_KEY", "")
-                configurationBuilder.AddInMemoryCollection([ 
-                    "config:connection-string",  connectionString
-                    "config:akka:persistence:journal:sql:connection-string",  connectionString
-                    "config:akka:persistence:query:journal:sql:connection-string", connectionString
-                    "config:akka:persistence:snapshot-store:sql:connection-string", connectionString
-                    "config:config:openai-api-key", ""
-                    "config:assistant-id", ""
-                    ] |> Map.ofList)
+
+                configurationBuilder.AddInMemoryCollection(
+                    [
+                        "config:connection-string", connectionString
+                        "config:akka:persistence:journal:sql:connection-string", connectionString
+                        "config:akka:persistence:query:journal:sql:connection-string", connectionString
+                        "config:akka:persistence:snapshot-store:sql:connection-string", connectionString
+                        "config:config:openai-api-key", ""
+                        "config:assistant-id", ""
+                    ]
+                    |> Map.ofList
+                )
                 |> ignore)
-            .ConfigureServices Program.configureServices
+            .ConfigureServices
+            Program.configureServices
         |> ignore
 
         let app = builder.Build() |> Program.configureApp
@@ -94,9 +99,9 @@ let ``the system should create the slug "(.*)"`` (expectedSlug: string) (context
     match context.GeneratedSlug with
     | None -> failwith "No slug was generated"
     | Some slug ->
-       
-            // Otherwise check for the specific slug
-            Expect.equal slug expectedSlug "The generated slug should match the expected slug"
+
+        // Otherwise check for the specific slug
+        Expect.equal slug expectedSlug "The generated slug should match the expected slug"
 
     context
 
@@ -104,18 +109,20 @@ let ``the system should create the slug "(.*)"`` (expectedSlug: string) (context
 let ``navigating to "(.*)" should redirect to "(.*)"`` (slug: string) (url: string) (context: TestContext) =
     (task {
         let! response = context.HttpClient.GetAsync(sprintf "http://localhost%s" slug)
-        
+
         // Check that we get a redirect status code (301 or 302)
-        let isRedirect = 
-            response.StatusCode = System.Net.HttpStatusCode.Redirect ||
-            response.StatusCode = System.Net.HttpStatusCode.MovedPermanently
+        let isRedirect =
+            response.StatusCode = System.Net.HttpStatusCode.Redirect
+            || response.StatusCode = System.Net.HttpStatusCode.MovedPermanently
+
         Expect.isTrue isRedirect "Should return a redirect status code (301 or 302)"
-        
+
         // Check that the Location header contains the correct URL
-        let locationHeader = response.Headers.Location 
+        let locationHeader = response.Headers.Location
         Expect.isNotNull locationHeader "Location header should be present"
         let locationHeader = locationHeader |> nonNull
         Expect.equal (locationHeader.ToString()) url "Should redirect to the correct URL"
-    }).Wait()
+    })
+        .Wait()
 
     context
