@@ -4,7 +4,7 @@ framework: net9.0
 storage: none
 
 nuget FSharp.Core
-nuget Giraffe prelease
+nuget Giraffe >= 8.0.0 prerelease
 nuget Hocon.Extensions.Configuration
 nuget Microsoft.Extensions.Logging.Console
 nuget Microsoft.Extensions.Hosting

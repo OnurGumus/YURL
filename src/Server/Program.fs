@@ -41,6 +41,7 @@ let endpoints () = [
 
 let configureServices (services: IServiceCollection) =
     services
+        .AddProblemDetails()
         .AddGiraffe()
         .AddSingleton<Environments.AppEnv>()
         .AddSingleton<Bootstrap.CQRSService>()
@@ -77,6 +78,7 @@ let configureApp (app: WebApplication) =
     app.Environment.ApplicationName <- "yurl"
 
     app
+        .UseDeveloperExceptionPage()
         .UseStaticFiles()
         .UseThrottlingTroll(fun opts -> opts.Config <- Throttling.config)
         .UseRouting()
