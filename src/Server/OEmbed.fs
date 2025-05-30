@@ -27,9 +27,21 @@ let private trimThreeWords (slug: string) =
 let providers = [
     {
         Name = "YouTube"
-        UrlPattern = Regex(@"(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)", RegexOptions.IgnoreCase)
+        UrlPattern = Regex(@"(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/|youtube\.com/shorts/)", RegexOptions.IgnoreCase)
         OEmbedEndpoint =
-            fun url -> $"https://www.youtube.com/oembed?url={System.Web.HttpUtility.UrlEncode(url)}&format=json"
+            fun url -> 
+                // Convert YouTube Shorts URL to regular video URL for oEmbed
+                let convertedUrl = 
+                    if url.Contains("/shorts/") then
+                        let videoIdMatch = Regex.Match(url, @"youtube\.com/shorts/([a-zA-Z0-9_-]+)")
+                        if videoIdMatch.Success then
+                            let videoId = videoIdMatch.Groups.[1].Value
+                            $"https://www.youtube.com/watch?v={videoId}"
+                        else
+                            url
+                    else
+                        url
+                $"https://www.youtube.com/oembed?url={System.Web.HttpUtility.UrlEncode(convertedUrl)}&format=json"
         SlugPrefix = "ytb_"
         SlugProcessor = Some trimThreeWords
     }
