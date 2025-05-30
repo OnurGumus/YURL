@@ -150,7 +150,7 @@ copyButton.addEventListener('click', function () {
                 copyButton.textContent = originalText;
                 copyFeedback.style.opacity = '0';
                 copyFeedback.textContent = '';
-            }, 2500);
+            }, 1500);
         })
         .catch(err => {
             console.error('Clipboard write failed: ', err);
@@ -164,12 +164,12 @@ copyButton.addEventListener('click', function () {
                 copyButton.textContent = originalText;
                 copyFeedback.style.opacity = '0';
                 copyFeedback.textContent = '';
-            }, 3000);
+            }, 2000);
         });
 });
 
 function startCountdown() {
-    let count = 8;
+    let count = 10;
     if (buttonCountdown) {
         buttonCountdown.textContent = count;
         
