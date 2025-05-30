@@ -113,7 +113,10 @@ shortenerForm.addEventListener('submit', async function (event) {
 });
 
 copyButton.addEventListener('click', function () {
-    navigator.clipboard.writeText(shortenedUrlDisplay.textContent)
+    const hostname = window.location.host.toUpperCase();
+    const slug = shortenedUrlDisplay.textContent.split('/').pop();
+    const urlToCopy = `https://${hostname}/${slug}`;
+    navigator.clipboard.writeText(urlToCopy)
         .then(() => {
             // UPDATED COPY FEEDBACK
             copyFeedback.textContent = 'yurl_vector_copied_to_buffer';
