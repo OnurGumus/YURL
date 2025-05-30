@@ -58,7 +58,7 @@ let private getHtmlContent (url: string) =
 
             let! fullHtmlContent = response.Content.ReadAsStringAsync()
 
-            let initialProcessingLength = 4096
+            let initialProcessingLength = 7096
             let additionalProcessingLength = 3000
             let maxOutputLength = 2000
 
