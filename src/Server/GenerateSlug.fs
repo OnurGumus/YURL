@@ -16,6 +16,7 @@ open FSharp.Control
 open System.Text.RegularExpressions
 open Microsoft.Extensions.Logging
 open System.Diagnostics
+open OEmbed
 
 let client = OpenAIAssistantAgent.CreateOpenAIClient()
 
@@ -29,6 +30,7 @@ let private isHtmlContentType (contentType: string | null) =
     | contentType ->
         contentType.Contains("text/html", StringComparison.OrdinalIgnoreCase)
         || contentType.Contains("application/xhtml+xml", StringComparison.OrdinalIgnoreCase)
+
 
 let private checkContentType (url: string) =
     task {
@@ -116,7 +118,7 @@ let private getHtmlContent (url: string) =
             return url
     }
 
-let private prepareForOpenAI (url: string) =
+let private handleHtmlContent (url: string) =
     task {
         let! isHtml = checkContentType url
         let urlPrefix = url.Substring(0, min 50 url.Length) // Get first 50 chars of URL
@@ -139,12 +141,70 @@ let private prepareForOpenAI (url: string) =
             return url
     }
 
+let private prepareForOpenAI (url: string) =
+    task {
+        // Check if it's a supported oEmbed site first (from our known list)
+        if OEmbed.isOEmbedSupported url then
+            let! oembedTitle = OEmbed.getTitle url
+            let urlPrefix = url.Substring(0, min 50 url.Length) // Get first 50 chars of URL
+            let combinedContent = urlPrefix + " " + oembedTitle
+            let maxOpenAiInputLength = 1000
+
+            if combinedContent.Length > maxOpenAiInputLength then
+                return combinedContent.Substring(0, maxOpenAiInputLength)
+            else
+                return combinedContent
+        else
+            // Try oEmbed discovery for unknown sites
+            let! discoveredEndpoint = OEmbedDiscovery.discoverOEmbed url
+
+            match discoveredEndpoint with
+            | Some oembedEndpoint ->
+                // Found oEmbed support via discovery
+                let! oembedData = OEmbedDiscovery.getOEmbedData oembedEndpoint
+
+                match oembedData with
+                | Some data when data.Title.IsSome ->
+                    let urlPrefix = url.Substring(0, min 50 url.Length)
+                    let combinedContent = urlPrefix + " " + data.Title.Value
+                    let maxOpenAiInputLength = 1000
+
+                    if combinedContent.Length > maxOpenAiInputLength then
+                        return combinedContent.Substring(0, maxOpenAiInputLength)
+                    else
+                        return combinedContent
+                | _ ->
+                    // oEmbed endpoint found but no title, fall back to HTML
+                    return! handleHtmlContent url
+            | None ->
+                // No oEmbed support, use HTML extraction
+                return! handleHtmlContent url
+    }
+
 let generateHash (input: string) =
     use sha256 = SHA256.Create()
     let hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input))
     let hashString = System.Convert.ToBase64String(hashBytes)
     // Take first 8 characters and replace URL-unsafe characters
     hashString.Substring(0, 8).Replace("+", "-").Replace("/", "_").Replace("=", "")
+
+let private isTwitterUrl (url: string) =
+    url.Contains "twitter.com/" || url.Contains "x.com/"
+
+let private processTwitterSlug (rawSlug: string) =
+    let trimmedSlug = rawSlug.Trim()
+
+    // If the slug has 3 words separated by underscores, keep only the first 2
+    let parts = trimmedSlug.Split('_')
+
+    let processedSlug =
+        if parts.Length = 3 then
+            parts.[0] + "_" + parts.[1]
+        else
+            trimmedSlug
+
+    // Add twt_ prefix
+    "twt_" + processedSlug
 
 let generateSlug url openAiKey assistantId (log: ILogger) =
     task {
@@ -165,17 +225,33 @@ let generateSlug url openAiKey assistantId (log: ILogger) =
 
             log.LogInformation("Content for OpenAI: {content}, time: {time}", contentForOpenAI, sw.Elapsed)
 
-            let! finalSlug =
-                (agent.InvokeAsync(Microsoft.SemanticKernel.ChatMessageContent(AuthorRole.User, contentForOpenAI))
-                 |> TaskSeq.map _.Message.Content
-                 |> TaskSeq.head)
+            let! rawSlug =
+                agent.InvokeAsync(Microsoft.SemanticKernel.ChatMessageContent(AuthorRole.User, contentForOpenAI))
+                |> TaskSeq.map _.Message.Content
+                |> TaskSeq.head
                 |> Async.AwaitTask
+
+            // Process the slug with site-specific rules and prefixes
+            let finalSlug =
+                if isTwitterUrl url then
+                    processTwitterSlug rawSlug
+                else
+                    OEmbed.processSlug url rawSlug
 
             log.LogInformation("Final slug: {slug}, time: {time}", finalSlug, sw.Elapsed)
             return finalSlug |> ValueLens.CreateAsResult |> Result.value
         with ex ->
             log.LogError(ex, "Error generating slug for URL: {url}", url)
-            return generateHash url |> ValueLens.CreateAsResult |> Result.value
+            // For fallback, also apply site-specific prefix if applicable
+            let fallbackSlug =
+                let hashSlug = generateHash url
+
+                if isTwitterUrl url then
+                    "twt_" + hashSlug
+                else
+                    OEmbed.processSlug url hashSlug
+
+            return fallbackSlug |> ValueLens.CreateAsResult |> Result.value
     }
 
 let behavior env (m: Actor<_>) =

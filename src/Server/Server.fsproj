@@ -11,6 +11,8 @@
     <Compile Include="Model.fs" />
     <Compile Include="Migrations.fs" />
     <Compile Include="SqlProvider.fs" />
+    <Compile Include="OEmbed.fs" />
+    <Compile Include="OEmbedDiscovery.fs" />
     <Compile Include="GenerateSlug.fs" />
     <Compile Include="SuffixSlug.fs" />
     <Compile Include="UrlHash.fs" />
