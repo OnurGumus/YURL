@@ -14,6 +14,19 @@ let countdownInterval = null;
 // Only proceed with form functionality if the form exists
 if (shortenerForm && urlInput && resultArea && shortenedUrlDisplay && copyButton && copyFeedback && shrinkButton) {
 
+// Capture initial button width to maintain consistent size
+let initialButtonWidth = null;
+
+function captureButtonWidth() {
+    if (copyButton && !initialButtonWidth) {
+        // Wait for button to be visible and rendered
+        if (copyButton.offsetWidth > 0) {
+            initialButtonWidth = copyButton.offsetWidth;
+            copyButton.style.width = initialButtonWidth + 'px';
+        }
+    }
+}
+
 function isValidUrlFormat(url) {
     if (!url) {
         alert('URL input cannot be empty. Please enter a URL.');
@@ -92,6 +105,9 @@ shortenerForm.addEventListener('submit', async function (event) {
     copyFeedback.style.opacity = '0';
     copyFeedback.textContent = '';
 
+    // Capture button width once it's visible
+    setTimeout(() => captureButtonWidth(), 50);
+
     let i = 0;
     const speed = 70;
 
@@ -116,19 +132,39 @@ copyButton.addEventListener('click', function () {
     const hostname = window.location.host.toUpperCase();
     const slug = shortenedUrlDisplay.textContent.split('/').pop();
     const urlToCopy = `https://${hostname}/${slug}`;
+    
+    // Add visual feedback to button
+    copyButton.classList.add('copied');
+    const originalText = copyButton.textContent;
+    copyButton.textContent = 'Copied!';
+    
     navigator.clipboard.writeText(urlToCopy)
         .then(() => {
             // UPDATED COPY FEEDBACK
             copyFeedback.textContent = 'yurl_vector_copied_to_buffer';
             copyFeedback.style.opacity = '1';
-            setTimeout(() => { copyFeedback.style.opacity = '0'; copyFeedback.textContent = ''; }, 2500);
+            
+            // Reset button after delay
+            setTimeout(() => {
+                copyButton.classList.remove('copied');
+                copyButton.textContent = originalText;
+                copyFeedback.style.opacity = '0';
+                copyFeedback.textContent = '';
+            }, 2500);
         })
         .catch(err => {
             console.error('Clipboard write failed: ', err);
             // UPDATED COPY ERROR
             copyFeedback.textContent = 'ai_err//:buffer_access_denied';
             copyFeedback.style.opacity = '1';
-            setTimeout(() => { copyFeedback.style.opacity = '0'; copyFeedback.textContent = ''; }, 3000);
+            
+            // Reset button after delay
+            setTimeout(() => {
+                copyButton.classList.remove('copied');
+                copyButton.textContent = originalText;
+                copyFeedback.style.opacity = '0';
+                copyFeedback.textContent = '';
+            }, 3000);
         });
 });
 
