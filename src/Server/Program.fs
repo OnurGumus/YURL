@@ -15,7 +15,7 @@ open System
 open ThrottlingTroll
 open Hocon.Extensions.Configuration
 open Giraffe.EndpointRouting
-
+open  Vertical.SpectreLogger
 #if DEBUG
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 #endif
@@ -50,9 +50,9 @@ let configureServices (services: IServiceCollection) =
 
 let configureLogging (ctx: WebHostBuilderContext) (logging: ILoggingBuilder) =
     if ctx.HostingEnvironment.IsDevelopment() then
-        logging.ClearProviders().AddConsole().AddDebug() |> ignore
+        logging.ClearProviders().AddSpectreConsole().AddDebug() |> ignore
     else
-        logging.ClearProviders().AddConsole() |> ignore
+        logging.ClearProviders().AddSpectreConsole() |> ignore
 
 let configureAppConfiguration (ctx: WebHostBuilderContext) (config: IConfigurationBuilder) =
     if ctx.HostingEnvironment.IsDevelopment() then

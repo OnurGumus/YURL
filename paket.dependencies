@@ -31,3 +31,5 @@ nuget Microsoft.Data.Sqlite
 nuget SqlProvider
 nuget Microsoft.SemanticKernel.Agents.OpenAI prerelease
 nuget FSharp.Control.TaskSeq
+nuget Seq.Extensions.Logging
+nuget vertical-spectreconsolelogger prerelease

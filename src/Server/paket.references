@@ -19,3 +19,5 @@ Microsoft.Data.Sqlite
 SQLProvider
 Microsoft.SemanticKernel.Agents.OpenAI
 FSharp.Control.TaskSeq
+Seq.Extensions.Logging
+vertical-spectreconsolelogger

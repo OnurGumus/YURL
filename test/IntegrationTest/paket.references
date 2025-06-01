@@ -7,3 +7,5 @@ TickSpec
 Microsoft.AspNetCore.TestHost
 Giraffe
 SQLProvider
+Seq.Extensions.Logging
+vertical-spectreconsolelogger

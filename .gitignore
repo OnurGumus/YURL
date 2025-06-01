@@ -6,3 +6,4 @@ obj/
 *.db-shm
 *.db-wal
 secret.hocon
+dotnet-install.sh
