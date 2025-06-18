@@ -36,7 +36,7 @@ type CQRSService(env: Environments.AppEnv) =
         let condition (e: UrlHash.Event) =
             e.IsAlreadyProcessed || e.IsAlreadyProcessing || e.IsProcessCompleted
 
-        let subscribe = this.UrlHashSubs cid actorId command condition
+        let subscribe = this.UrlHashSubs cid actorId command condition None
 
         async {
             match! subscribe with
@@ -56,8 +56,9 @@ type CQRSService(env: Environments.AppEnv) =
         return res |> Seq.cast<'t> |> List.ofSeq
     }
 
-    member _.UrlHashSubs cid =
-        actorApi.CreateCommandSubscription urlHashShard cid
+    member _.UrlHashSubs cid = actorApi.CreateCommandSubscription urlHashShard cid  
+       
+
 
     override _.ExecuteAsync(_stoppingToken: CancellationToken) =
         task {
